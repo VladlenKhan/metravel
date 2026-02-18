@@ -1,11 +1,13 @@
 import './index.css'
-import Header from './components/Header';
+import Navbar from './components/Navbar';
+import Hero from './components/Hero';
 import MainContent from './components/MainContent';
 import Footer from './components/Footer';
 function App() {
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Navbar />
+      <Hero />
       <MainContent/>
       <Footer/>
       {/* здесь будет остальной контент */}

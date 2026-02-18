@@ -1,7 +1,7 @@
 // src/components/Footer.tsx
- 
 import { FiMapPin, FiPhone, FiMail, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi';
-import { FaPlane } from 'react-icons/fa';  // ← добавь эту строку
+import { FaPlane } from 'react-icons/fa';
+
 export default function Footer() {
   return (
     <footer className="bg-gray-900 text-gray-300">
@@ -33,10 +33,10 @@ export default function Footer() {
             <h4 className="text-white text-lg font-semibold mb-6">Навигация</h4>
             <ul className="space-y-3">
               <li><a href="#" className="hover:text-white transition-colors">Главная</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Туры</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Страны</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">О компании</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Контакты</a></li>
+              <li><a href="#tours" className="hover:text-white transition-colors">Туры</a></li>
+              <li><a href="#countries" className="hover:text-white transition-colors">Страны</a></li>
+              <li><a href="#about" className="hover:text-white transition-colors">О компании</a></li>
+              <li><a href="#contacts" className="hover:text-white transition-colors">Контакты</a></li>
             </ul>
           </div>
 
@@ -53,7 +53,7 @@ export default function Footer() {
           </div>
 
           {/* Контакты */}
-          <div>
+          <div id="contacts">
             <h4 className="text-white text-lg font-semibold mb-6">Контакты</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">

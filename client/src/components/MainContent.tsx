@@ -1,6 +1,6 @@
 // src/components/MainContent.tsx
 import { useState } from 'react';
-import { FiMapPin, FiClock, FiDollarSign, FiArrowRight, FiMail, FiPhone, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi';
+import { FiMapPin, FiClock, FiDollarSign, FiArrowRight } from 'react-icons/fi';
 import { FaPlaneDeparture } from 'react-icons/fa';
 
 const popularDestinations = [
@@ -23,7 +23,7 @@ export default function MainContent() {
   return (
     <main className="pt-8 pb-20 bg-gray-50">
       {/* Популярные направления */}
-      <section className="py-16 md:py-20">
+      <section id="tours" className="py-16 md:py-20">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -69,7 +69,7 @@ export default function MainContent() {
       </section>
 
       {/* Почему выбирают нас */}
-      <section className="py-16 md:py-20 bg-white">
+      <section id="about" className="py-16 md:py-20 bg-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
           <div className="text-center mb-12 md:mb-16">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -91,8 +91,8 @@ export default function MainContent() {
         </div>
       </section>
 
-      {/* Горящие туры (простая имитация табов) */}
-      <section className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+      {/* Горящие туры */}
+      <section id="countries" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
           <div className="text-center mb-10 md:mb-14">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
@@ -118,7 +118,6 @@ export default function MainContent() {
             ))}
           </div>
 
-          {/* Здесь можно добавить карточки туров в зависимости от activeTab */}
           <div className="text-center py-12 text-gray-500">
             Карточки туров по выбранной категории (реализуйте по аналогии с popularDestinations)
           </div>
