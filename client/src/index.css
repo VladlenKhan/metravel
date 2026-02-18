@@ -1,22 +1,26 @@
 /* src/index.css */
 
-@import "tailwindcss";    
+@import "tailwindcss";
 
-/* Подключаем свои шрифты */
 @font-face {
   font-family: "ForestSmooth";
-  src: url("./assets/fonts/ForestSmooth-Regular.ttf") format("ttf");
-  font-weight: 400;
+  src: url("../src/assets/ForestSmooth-Regular.ttf") format("truetype");
+  font-weight: normal;       /* или 400 */
   font-style: normal;
-  font-display: swap;
+  font-display: swap;        /* важно для производительности */
 }
 
-
-/* Базовые стили (опционально) */
-:root {
-  --font-primary: "ForestSmooth", system-ui, sans-serif;
+/* Вариант 1: заменить стандартный sans на твой шрифт (весь проект) */
+@theme {
+  --font-sans: "ForestSmooth", system-ui, sans-serif;
 }
 
+/* Вариант 2: создать отдельный класс (рекомендую, если шрифт не для всего текста) */
+@theme {
+  --font-forest: "ForestSmooth", system-ui, sans-serif;
+}
+
+/* Опционально — улучшить рендеринг текста */
 body {
-  font-family: var(--font-primary);
+  @apply antialiased;
 }
