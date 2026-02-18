@@ -1,3 +1,22 @@
-@import "tailwindcss";
+/* src/index.css */
 
- 
+@import "tailwindcss";    
+
+/* Подключаем свои шрифты */
+@font-face {
+  font-family: "ForestSmooth";
+  src: url("./assets/fonts/ForestSmooth-Regular.ttf") format("ttf");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+
+/* Базовые стили (опционально) */
+:root {
+  --font-primary: "ForestSmooth", system-ui, sans-serif;
+}
+
+body {
+  font-family: var(--font-primary);
+}
