@@ -1,41 +1,29 @@
-var builder = WebApplication.CreateBuilder(args);
+using MassTransit;
+using Microsoft.Extensions.Hosting;
+using Notification.Messages;
+using Notification.Consumers;
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+var builder = Host.CreateApplicationBuilder(args);
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+builder.Services.AddMassTransit(x =>
 {
-    app.MapOpenApi();
-}
+    // Регистрируем consumer для события бронирования
+    x.AddConsumer<BookingCreatedConsumer>();
 
-app.UseHttpsRedirection();
+    x.UsingRabbitMq((context, cfg) =>
+    {
+        cfg.Host("localhost", "/", h =>
+        {
+            h.Username("guest");
+            h.Password("guest");
+        });
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
+        cfg.ReceiveEndpoint("notification-booking-created", e =>
+        {
+            e.ConfigureConsumer<BookingCreatedConsumer>(context);
+        });
+    });
+});
 
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
-
-app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
+var host = builder.Build();
+await host.RunAsync();

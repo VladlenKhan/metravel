@@ -33,6 +33,43 @@
             "related": ".pdb;.xml"
           }
         }
+      },
+      "Application/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Application.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Application.dll": {}
+        }
+      },
+      "Domain/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "compile": {
+          "bin/placeholder/Domain.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Domain.dll": {}
+        }
+      },
+      "Infrastructure/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v9.0",
+        "dependencies": {
+          "Application": "1.0.0",
+          "Domain": "1.0.0"
+        },
+        "compile": {
+          "bin/placeholder/Infrastructure.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/Infrastructure.dll": {}
+        }
       }
     }
   },
@@ -67,10 +104,27 @@
         "microsoft.openapi.1.6.17.nupkg.sha512",
         "microsoft.openapi.nuspec"
       ]
+    },
+    "Application/1.0.0": {
+      "type": "project",
+      "path": "../Application/Application.csproj",
+      "msbuildProject": "../Application/Application.csproj"
+    },
+    "Domain/1.0.0": {
+      "type": "project",
+      "path": "../Domain/Domain.csproj",
+      "msbuildProject": "../Domain/Domain.csproj"
+    },
+    "Infrastructure/1.0.0": {
+      "type": "project",
+      "path": "../Infrastructure/Infrastructure.csproj",
+      "msbuildProject": "../Infrastructure/Infrastructure.csproj"
     }
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "Application >= 1.0.0",
+      "Infrastructure >= 1.0.0",
       "Microsoft.AspNetCore.OpenApi >= 9.0.11"
     ]
   },
@@ -99,7 +153,14 @@
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Application/Application.csproj": {
+              "projectPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Application/Application.csproj"
+            },
+            "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/Infrastructure.csproj": {
+              "projectPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/Infrastructure.csproj"
+            }
+          }
         }
       },
       "warningProperties": {

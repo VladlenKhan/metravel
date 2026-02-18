@@ -1,0 +1,86 @@
+# Root .gitignore for metravel (client + server)
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Logs & temp
+*.log
+*.tmp
+*.temp
+*.bak
+*.cache
+*.pid
+
+## Env/secrets
+.env
+.env.*
+!.env.example
+**/*.secrets.json
+**/secrets.json
+
+## =========================
+## Frontend (Vite/React/TS) - client/
+## =========================
+**/node_modules/
+**/dist/
+**/dist-ssr/
+**/.vite/
+**/.turbo/
+**/.parcel-cache/
+**/.eslintcache
+**/.stylelintcache
+**/.cache/
+
+## Frontend coverage
+**/coverage/
+**/.nyc_output/
+
+## =========================
+## Backend (.NET) - server/
+## =========================
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+**/artifacts/
+**/publish/
+**/AppPackages/
+**/*.dbmdl
+**/*.jfm
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.sln.iml
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+## NuGet
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/project.assets.json
+**/project.nuget.cache
+**/*.nuget.dgspec.json
+**/*.nuget.g.props
+**/*.nuget.g.targets
+
+## ASP.NET Core / IIS Express
+**/iisexpress/
+**/aspnetcorev2_inprocess.dll
+
+## appsettings: keep base file tracked, ignore environment overrides
+**/appsettings.*.json
+!**/appsettings.json
+
+## Azure Functions local settings (if used)
+local.settings.json
+
+
