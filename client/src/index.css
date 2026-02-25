@@ -6,14 +6,14 @@
 /* 2. Подключаем кастомный шрифт */
 @font-face {
   font-family: 'ForestSmooth';
-  src: url('../src/assets/ForestSmooth-Regular.ttf') format('truetype');
+  src: url('../src/assets/fonts/ForestSmooth-Regular.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 @font-face {
   font-family: 'Inter-Medium';
-  src: url('../src/assets/Inter-Medium.ttf') format('truetype');
+  src: url('../src/assets/fonts/Inter-Medium.ttf') format('truetype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;

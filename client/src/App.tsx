@@ -1,17 +1,22 @@
-import './index.css'
-import Navbar from './components/Navbar';
-import Hero from './components/Hero';
-import MainContent from './components/MainContent';
-import Footer from './components/Footer';
+import { Routes, Route } from 'react-router-dom';
 
+import Home from './pages/Home';
+import Tours from './pages/Tours';
+import NotFound from './pages/NotFound';  
+
+// Можно добавить общий Layout позже
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar />
-      <Hero />
-      <MainContent />
-      <Footer />
-    </div>
+    <Routes>
+      <Route path="/home" element={<Home />} />
+      <Route path="/tours" element={<Tours />} />
+      
+      {/* Динамический маршрут пример */}
+      {/* <Route path="/tours/:id" element={<TourDetail />} /> */}
+
+      {/* 404 в конце */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
   );
 }
 

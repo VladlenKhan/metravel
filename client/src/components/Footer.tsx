@@ -1,6 +1,6 @@
 // src/components/Footer.tsx
 import { FiMapPin, FiPhone, FiMail, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi';
-import { FaPlane } from 'react-icons/fa';
+import Logo from '../assets/images/metravel-logo-alt.svg';
 
 export default function Footer() {
   return (
@@ -10,11 +10,10 @@ export default function Footer() {
           {/* Logo + описание */}
           <div>
             <div className="flex items-center gap-3 mb-6">
-              <div className="relative">
-                <FaPlane className="h-9 w-9 text-indigo-400" />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-amber-400 rounded-full border-2 border-gray-900" />
+              <div className="relative w-10"> 
+                <img src={Logo} alt="logo" /> 
               </div>
-              <span className="font-extrabold text-3xl tracking-tight text-white">
+              <span className="logo font-extrabold text-3xl tracking-tight text-white">
                 <span className="text-indigo-400">Me</span>Travel
               </span>
             </div>
@@ -32,7 +31,7 @@ export default function Footer() {
           <div>
             <h4 className="text-white text-lg font-semibold mb-6">Навигация</h4>
             <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors">Главная</a></li>
+              <li><a href="#main" className="hover:text-white transition-colors">Главная</a></li>
               <li><a href="#tours" className="hover:text-white transition-colors">Туры</a></li>
               <li><a href="#countries" className="hover:text-white transition-colors">Страны</a></li>
               <li><a href="#about" className="hover:text-white transition-colors">О компании</a></li>

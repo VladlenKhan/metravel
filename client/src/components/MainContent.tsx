@@ -61,9 +61,9 @@ export default function MainContent() {
           </div>
 
           <div className="text-center mt-12">
-            <button className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+            <a href="/tours" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
               Показать все направления <FiArrowRight />
-            </button>
+            </a>
           </div>
         </div>
       </section>
