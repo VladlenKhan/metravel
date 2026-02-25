@@ -15,7 +15,7 @@ export default function Hero() {
       {/* Content */}
       <div className="relative mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl w-full">
         <div className="max-w-4xl">
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-6 md:mb-8">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-6 md:mb-8 mt-5 title">
             Путешествия,<br />
             <span className="text-amber-300">которые меняют</span><br />
             тебя навсегда

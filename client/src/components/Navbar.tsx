@@ -47,7 +47,7 @@ export default function Navbar() {
               <FaPlane className="h-8 w-8 text-indigo-600 group-hover:text-indigo-700 transition-colors" />
               <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-400 rounded-full border-2 border-white" />
             </div>
-            <span className="font-extrabold text-2xl md:text-3xl tracking-tight">
+            <span className="font-extrabold text-2xl md:text-3xl tracking-tight logo">
               <span className="text-indigo-700">Me</span>
               <span className="text-gray-900">Travel</span>
             </span>
@@ -95,12 +95,7 @@ export default function Navbar() {
 
           {/* Right side buttons */}
           <div className="hidden md:flex items-center gap-4">
-            <a
-              href="tel:+74951234567"
-              className="hidden lg:flex items-center gap-2 text-gray-700 hover:text-indigo-700 transition-colors"
-            >
-              <span className="font-medium">+7 (495) 123-45-67</span>
-            </a>
+           
             <button className="px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-full transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
               Подобрать тур
             </button>
