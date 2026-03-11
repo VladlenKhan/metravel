@@ -1,3 +1,4 @@
+using Domain.Audit;
 using Domain.Bookings;
 using Domain.Clients;
 using Domain.Services;
@@ -17,6 +18,7 @@ public class MeTravelDbContext : DbContext
     public DbSet<Booking> Bookings { get; set; } = null!;
     public DbSet<Service> Services { get; set; } = null!;
     public DbSet<TourService> TourServices { get; set; } = null!;
+    public DbSet<AuditLog> AuditLogs { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
