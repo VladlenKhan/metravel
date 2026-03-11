@@ -32,10 +32,9 @@ export default function Footer() {
             <h4 className="text-white text-lg font-semibold mb-6">Навигация</h4>
             <ul className="space-y-3">
               <li><a href="#main" className="hover:text-white transition-colors">Главная</a></li>
-              <li><a href="#tours" className="hover:text-white transition-colors">Туры</a></li>
+              <li><a href="/tours" className="hover:text-white transition-colors">Туры</a></li>
               <li><a href="#countries" className="hover:text-white transition-colors">Страны</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">О компании</a></li>
-              <li><a href="#contacts" className="hover:text-white transition-colors">Контакты</a></li>
+              <li><a href="#about" className="hover:text-white transition-colors">О компании</a></li> 
             </ul>
           </div>
 
