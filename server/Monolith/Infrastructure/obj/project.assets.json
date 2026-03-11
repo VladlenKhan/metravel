@@ -2883,36 +2883,35 @@
     ]
   },
   "packageFolders": {
-    "/Users/glebkapustin/.nuget/packages/": {}
+    "/Users/vladlen/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/Infrastructure.csproj",
+      "projectUniqueName": "/Users/vladlen/Desktop/all/metravel/server/Monolith/Infrastructure/Infrastructure.csproj",
       "projectName": "Infrastructure",
-      "projectPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/Infrastructure.csproj",
-      "packagesPath": "/Users/glebkapustin/.nuget/packages/",
-      "outputPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/obj/",
+      "projectPath": "/Users/vladlen/Desktop/all/metravel/server/Monolith/Infrastructure/Infrastructure.csproj",
+      "packagesPath": "/Users/vladlen/.nuget/packages/",
+      "outputPath": "/Users/vladlen/Desktop/all/metravel/server/Monolith/Infrastructure/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/glebkapustin/.nuget/NuGet/NuGet.Config"
+        "/Users/vladlen/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
       ],
       "sources": {
-        "/usr/local/share/dotnet/library-packs": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Application/Application.csproj": {
-              "projectPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Application/Application.csproj"
+            "/Users/vladlen/Desktop/all/metravel/server/Monolith/Application/Application.csproj": {
+              "projectPath": "/Users/vladlen/Desktop/all/metravel/server/Monolith/Application/Application.csproj"
             },
-            "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Domain/Domain.csproj": {
-              "projectPath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Domain/Domain.csproj"
+            "/Users/vladlen/Desktop/all/metravel/server/Monolith/Domain/Domain.csproj": {
+              "projectPath": "/Users/vladlen/Desktop/all/metravel/server/Monolith/Domain/Domain.csproj"
             }
           }
         }
@@ -2968,7 +2967,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.308/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

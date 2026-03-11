@@ -36,7 +36,7 @@ export default function MainContent() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {popularDestinations.map((dest) => (
-              <div
+              <a href="#"
                 key={dest.id}
                 className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-white"
               >
@@ -56,18 +56,52 @@ export default function MainContent() {
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-indigo-700 font-medium text-sm">
                   Горящий тур
                 </div>
-              </div>
+              </a>
             ))}
           </div>
 
           <div className="text-center mt-12">
-            <button className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+            <a href="/tours" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
               Показать все направления <FiArrowRight />
-            </button>
+            </a>
           </div>
         </div>
       </section>
 
+
+
+      {/* Горящие туры */}
+      <section id="countries" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
+        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
+              Горящие предложения
+            </h2>
+          </div>
+
+          <div className="flex justify-center gap-4 mb-10 flex-wrap">
+            {['Пляжный отдых', 'Экскурсии', 'Горные туры'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab === 'Пляжный отдых' ? 'beach' : tab === 'Экскурсии' ? 'excursion' : 'ski')}
+                className={`px-6 py-3 rounded-full font-medium transition-all ${(tab === 'Пляжный отдых' && activeTab === 'beach') ||
+                  (tab === 'Экскурсии' && activeTab === 'excursion') ||
+                  (tab === 'Горные туры' && activeTab === 'ski')
+                  ? 'bg-indigo-600 text-white shadow-lg'
+                  : 'bg-white text-gray-700 hover:bg-gray-100'
+                  }`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+
+          <div className="text-center py-12 text-gray-500">
+            Карточки туров по выбранной категории (реализуйте по аналогии с popularDestinations)
+          </div>
+        </div>
+      </section>
+      
       {/* Почему выбирают нас */}
       <section id="about" className="py-16 md:py-20 bg-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
@@ -87,39 +121,6 @@ export default function MainContent() {
                 <p className="text-gray-600">{item.desc}</p>
               </div>
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Горящие туры */}
-      <section id="countries" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
-          <div className="text-center mb-10 md:mb-14">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Горящие предложения
-            </h2>
-          </div>
-
-          <div className="flex justify-center gap-4 mb-10 flex-wrap">
-            {['Пляжный отдых', 'Экскурсии', 'Горные туры'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab === 'Пляжный отдых' ? 'beach' : tab === 'Экскурсии' ? 'excursion' : 'ski')}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${
-                  (tab === 'Пляжный отдых' && activeTab === 'beach') ||
-                  (tab === 'Экскурсии' && activeTab === 'excursion') ||
-                  (tab === 'Горные туры' && activeTab === 'ski')
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'bg-white text-gray-700 hover:bg-gray-100'
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="text-center py-12 text-gray-500">
-            Карточки туров по выбранной категории (реализуйте по аналогии с popularDestinations)
           </div>
         </div>
       </section>
