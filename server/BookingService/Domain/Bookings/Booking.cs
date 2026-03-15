@@ -1,7 +1,4 @@
-using Domain.Clients;
-using Domain.Tours;
-
-namespace Domain.Bookings;
+namespace BookingService.Domain.Bookings;
 
 public class Booking
 {
@@ -20,8 +17,5 @@ public class Booking
     public decimal FinalPrice { get; set; }
 
     public BookingStatus Status { get; set; }
-
-    public Client Client { get; set; } = null!;
-
-    public Tour Tour { get; set; } = null!;
 }
+

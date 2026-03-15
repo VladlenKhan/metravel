@@ -1,8 +1,10 @@
 using Application.Modules.Audit.Interfaces;
 using Application.Modules.Audit.Services;
+using Application.Modules.Messaging.Interfaces;
 using Application.Modules.Tours.Interfaces;
 using Application.Modules.Tours.Services;
 using Infrastructure;
+using Infrastructure.Modules.Messaging;
 using Infrastructure.Modules.Audit.Repositories;
 using Infrastructure.Modules.Tours.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,7 @@ builder.Services.AddScoped<ITourRepository, TourRepository>();
 builder.Services.AddScoped<ITourService, TourService>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
 
 builder.Services.AddControllers();
 
