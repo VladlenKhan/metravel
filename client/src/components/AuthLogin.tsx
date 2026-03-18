@@ -25,7 +25,7 @@ export default function AuthLogin() {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="you@example.com"
-                            className="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                            className="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
                             required
                         />
                     </div>
@@ -37,11 +37,11 @@ export default function AuthLogin() {
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
                             placeholder="••••••••"
-                            className="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                            className="w-full mt-1 px-4 py-2 border rounded-xl focus:outline-none focus:ring-2 focus:ring-amber-500"
                             required
                         />
                     </div>
-                    <button className="w-full py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:opacity-90 transition">
+                    <button className="w-full py-2.5 bg-amber-500 text-white font-semibold rounded-xl hover:opacity-90 transition">
                         <a href="#"
                             type="submit">
                             Войти
