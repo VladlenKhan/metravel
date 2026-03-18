@@ -4,7 +4,7 @@ import Logo from '../assets/images/metravel-logo-alt.svg';
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
+    <footer id="contacts"  className="bg-gray-900 text-gray-300">
       <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12">
           {/* Logo + описание */}
@@ -31,10 +31,10 @@ export default function Footer() {
           <div>
             <h4 className="text-white text-lg font-semibold mb-6">Навигация</h4>
             <ul className="space-y-3">
-              <li><a href="#main" className="hover:text-white transition-colors">Главная</a></li>
+              <li><a href="/#main" className="hover:text-white transition-colors">Главная</a></li>
               <li><a href="/tours" className="hover:text-white transition-colors">Туры</a></li>
-              <li><a href="#countries" className="hover:text-white transition-colors">Страны</a></li>
-              <li><a href="#about" className="hover:text-white transition-colors">О компании</a></li> 
+              <li><a href="/#countries" className="hover:text-white transition-colors">Страны</a></li>
+              <li><a href="/#about" className="hover:text-white transition-colors">О компании</a></li> 
             </ul>
           </div>
 
@@ -51,7 +51,7 @@ export default function Footer() {
           </div>
 
           {/* Контакты */}
-          <div id="contacts">
+          <div >
             <h4 className="text-white text-lg font-semibold mb-6">Контакты</h4>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">

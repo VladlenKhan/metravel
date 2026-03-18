@@ -4,11 +4,13 @@ import Home from './pages/Home';
 import Tours from './pages/Tours';
 import NotFound from './pages/NotFound';  
 import SignIn from './pages/SignIn'
-import SignUp from './pages/SignUp'
-
-// Можно добавить общий Layout позже
+import SignUp from './pages/SignUp' 
+import ScrollToHash from './components/ScrollToHash';
+ 
 function App() {
   return (
+    <>
+    <ScrollToHash/>
     <Routes>
       <Route path="/" element={<Home />} />
       <Route path="/tours" element={<Tours />} />
@@ -20,6 +22,7 @@ function App() {
       {/* 404 в конце */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </>
   );
 }
 

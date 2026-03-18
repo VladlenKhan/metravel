@@ -126,7 +126,7 @@ export default function MainContent() {
       </section>
 
       {/* Форма подбора тура */}
-      <section className="py-20 bg-indigo-600 text-white">
+      <section id="find" className="py-20 bg-indigo-600 text-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-5xl">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-5xl font-bold mb-4">

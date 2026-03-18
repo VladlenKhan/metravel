@@ -1,5 +1,5 @@
 // src/components/Hero.tsx
-import bgImage from '../assets/images/background5.jpg';
+import bgImage from '../assets/images/backgournd-video-1.mp4';
 
 export default function Hero() {
   return (
@@ -7,10 +7,13 @@ export default function Hero() {
       {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-900/40 via-green-900/40 to-blue-900/40 mix-blend-multiply " />
-        <img
+        <video
           src={bgImage}
-          alt="Горный пейзаж для путешествий"
           className="w-full h-full object-cover"
+          loop
+          autoPlay
+          muted
+          playsInline
         />
       </div>
 
