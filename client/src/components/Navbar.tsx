@@ -125,7 +125,7 @@ export default function Navbar() {
 
             <a
               href="/register"
-              className="w-full text-center py-3 bg-indigo-900 text-white rounded-xl">
+              className="w-full text-center py-3 hover:bg-amber-300 text-white rounded-xl">
               Регистрация
             </a>
 
