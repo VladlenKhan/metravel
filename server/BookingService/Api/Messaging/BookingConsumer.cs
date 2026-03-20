@@ -59,5 +59,3 @@ public class BookingConsumer : BackgroundService
         base.Dispose();
     }
 }
-
-

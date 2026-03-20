@@ -1,4 +1,3 @@
-using Domain.Bookings;
 using Domain.Services;
 
 namespace Domain.Tours;
@@ -26,6 +25,4 @@ public class Tour
     public string? Description { get; set; }
 
     public ICollection<TourService> TourServices { get; set; } = new List<TourService>();
-
-    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
 }

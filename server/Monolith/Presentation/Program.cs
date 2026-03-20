@@ -1,11 +1,14 @@
 using Application.Modules.Audit.Interfaces;
 using Application.Modules.Audit.Services;
+using Application.Modules.Clients.Interfaces;
+using Application.Modules.Clients.Services;
 using Application.Modules.Messaging.Interfaces;
 using Application.Modules.Tours.Interfaces;
 using Application.Modules.Tours.Services;
 using Infrastructure;
 using Infrastructure.Modules.Messaging;
 using Infrastructure.Modules.Audit.Repositories;
+using Infrastructure.Modules.Clients.Repositories;
 using Infrastructure.Modules.Tours.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
@@ -20,6 +23,8 @@ builder.Services.AddDbContext<MeTravelDbContext>(options =>
 
 builder.Services.AddScoped<ITourRepository, TourRepository>();
 builder.Services.AddScoped<ITourService, TourService>();
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IClientService, ClientService>();
 builder.Services.AddScoped<IAuditRepository, AuditRepository>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddSingleton<IRabbitMqPublisher, RabbitMqPublisher>();
@@ -51,4 +56,3 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 
 app.Run();
-

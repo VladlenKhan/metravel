@@ -1,5 +1,3 @@
-using Domain.Bookings;
-
 namespace Domain.Clients;
 
 public class Client
@@ -17,7 +15,5 @@ public class Client
     public string Email { get; set; } = null!;
     
     public string PasswordHash { get; set; } = null!;
-    public string Role { get; set; } = "User"; 
-
-    public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
+    public string Role { get; set; } = "User";
 }

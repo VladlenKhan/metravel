@@ -20,4 +20,3 @@ public class BookingDbContext : DbContext
             .HasConversion<int>();
     }
 }
-

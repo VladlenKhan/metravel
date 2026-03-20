@@ -27,4 +27,3 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/", () => "Booking Service API");
 
 app.Run();
-

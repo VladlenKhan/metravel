@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "QKzRk3binoA=",
+  "dgSpecHash": "FbQ5AWyeARw=",
   "success": true,
   "projectFilePath": "/Users/glebkapustin/Desktop/Cods/metravel/server/Monolith/Infrastructure/Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -34,6 +34,7 @@
     "/Users/glebkapustin/.nuget/packages/mono.texttemplating/3.0.0/mono.texttemplating.3.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/npgsql/9.0.0/npgsql.9.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/npgsql.entityframeworkcore.postgresql/9.0.0/npgsql.entityframeworkcore.postgresql.9.0.0.nupkg.sha512",
+    "/Users/glebkapustin/.nuget/packages/rabbitmq.client/6.8.1/rabbitmq.client.6.8.1.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.codedom/6.0.0/system.codedom.6.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.collections.immutable/7.0.0/system.collections.immutable.7.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.composition/7.0.0/system.composition.7.0.0.nupkg.sha512",
@@ -43,6 +44,7 @@
     "/Users/glebkapustin/.nuget/packages/system.composition.runtime/7.0.0/system.composition.runtime.7.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.composition.typedparts/7.0.0/system.composition.typedparts.7.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.io.pipelines/7.0.0/system.io.pipelines.7.0.0.nupkg.sha512",
+    "/Users/glebkapustin/.nuget/packages/system.memory/4.5.5/system.memory.4.5.5.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.reflection.metadata/7.0.0/system.reflection.metadata.7.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.runtime.compilerservices.unsafe/6.0.0/system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
     "/Users/glebkapustin/.nuget/packages/system.text.json/9.0.0/system.text.json.9.0.0.nupkg.sha512",

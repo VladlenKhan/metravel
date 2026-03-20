@@ -22,18 +22,6 @@ public class MeTravelDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        modelBuilder.Entity<Client>()
-            .HasMany(c => c.Bookings)
-            .WithOne(b => b.Client)
-            .HasForeignKey(b => b.ClientId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<Tour>()
-            .HasMany(t => t.Bookings)
-            .WithOne(b => b.Tour)
-            .HasForeignKey(b => b.TourId)
-            .OnDelete(DeleteBehavior.Restrict);
-
         modelBuilder.Entity<TourService>()
             .HasKey(ts => new { ts.TourId, ts.ServiceId });
 

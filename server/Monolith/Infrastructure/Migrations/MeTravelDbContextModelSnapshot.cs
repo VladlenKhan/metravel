@@ -22,41 +22,38 @@ namespace Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Domain.Bookings.Booking", b =>
+            modelBuilder.Entity("Domain.Audit.AuditLog", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<DateTime>("BookingDate")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("ClientId")
-                        .HasColumnType("uuid");
-
-                    b.Property<decimal>("DiscountPercent")
-                        .HasColumnType("numeric");
-
-                    b.Property<string>("EmployeeName")
+                    b.Property<string>("Action")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<decimal>("FinalPrice")
-                        .HasColumnType("numeric");
+                    b.Property<string>("Details")
+                        .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
+                    b.Property<string>("EntityId")
+                        .HasColumnType("text");
 
-                    b.Property<Guid>("TourId")
-                        .HasColumnType("uuid");
+                    b.Property<string>("EntityType")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("Success")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("Timestamp")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("UserName")
+                        .HasColumnType("text");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("ClientId");
-
-                    b.HasIndex("TourId");
-
-                    b.ToTable("Bookings");
+                    b.ToTable("AuditLogs");
                 });
 
             modelBuilder.Entity("Domain.Clients.Client", b =>
@@ -80,7 +77,15 @@ namespace Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<string>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<string>("PhoneNumber")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Role")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -172,25 +177,6 @@ namespace Infrastructure.Migrations
                     b.ToTable("Tours");
                 });
 
-            modelBuilder.Entity("Domain.Bookings.Booking", b =>
-                {
-                    b.HasOne("Domain.Clients.Client", "Client")
-                        .WithMany("Bookings")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("Domain.Tours.Tour", "Tour")
-                        .WithMany("Bookings")
-                        .HasForeignKey("TourId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-
-                    b.Navigation("Tour");
-                });
-
             modelBuilder.Entity("Domain.Services.TourService", b =>
                 {
                     b.HasOne("Domain.Services.Service", "Service")
@@ -210,11 +196,6 @@ namespace Infrastructure.Migrations
                     b.Navigation("Tour");
                 });
 
-            modelBuilder.Entity("Domain.Clients.Client", b =>
-                {
-                    b.Navigation("Bookings");
-                });
-
             modelBuilder.Entity("Domain.Services.Service", b =>
                 {
                     b.Navigation("TourServices");
@@ -222,8 +203,6 @@ namespace Infrastructure.Migrations
 
             modelBuilder.Entity("Domain.Tours.Tour", b =>
                 {
-                    b.Navigation("Bookings");
-
                     b.Navigation("TourServices");
                 });
 #pragma warning restore 612, 618
