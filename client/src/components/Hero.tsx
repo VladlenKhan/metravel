@@ -40,17 +40,17 @@ export default function Hero() {
           </div>
 
           {/* Trust badges */}
-          <div className="flex flex-wrap gap-8 md:gap-12 mt-12 md:mt-16 text-white/90">
+          <div className="flex flex-wrap gap-8 md:gap-12 mt-12 mb-6  md:mt-16 text-white/90">
             <div>
-              <div className="text-3xl md:text-4xl font-bold">8 лет</div>
+              <div className="text-3xl md:text-4xl font-bold">3 года</div>
               <div className="text-sm md:text-base">на рынке</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold">24 000+</div>
+              <div className="text-3xl md:text-4xl font-bold">1 000+</div>
               <div className="text-sm md:text-base">счастливых туристов</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold">97%</div>
+              <div className="text-3xl md:text-4xl font-bold">95%</div>
               <div className="text-sm md:text-base">рекомендуют нас</div>
             </div>
           </div>

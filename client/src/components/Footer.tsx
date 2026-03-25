@@ -7,7 +7,7 @@ export default function Footer() {
     <footer id="contacts"  className="bg-gray-900 text-gray-300">
       <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl pt-16 pb-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12">
-          {/* Logo + описание */}
+        
           <div>
             <div className="flex items-center gap-3 mb-6">
               <div className="relative w-10"> 
