@@ -1,5 +1,5 @@
 // src/components/Testimonials.tsx
-import { useState, useEffect, TouchEvent } from "react";
+import { useState, useEffect } from "react";
 import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
 
 const testimonials = [
