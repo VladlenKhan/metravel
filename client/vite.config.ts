@@ -8,7 +8,6 @@ export default defineConfig({
     tailwindcss(),
   ],
 
-  base: '/metravel/', // ⚠️ ОБЯЗАТЕЛЬНО (имя репозитория)
 
   server: {
     port: 5173,
