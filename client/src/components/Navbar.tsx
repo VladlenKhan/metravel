@@ -79,13 +79,13 @@ export default function Navbar() {
 
             <a
               href="/register"
-              className="px-5 py-2.5 bg-indigo-900 hover:bg-amber-300 text-white rounded-full transition">
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition">
               Регистрация
             </a>
 
             <a
               href="/login"
-              className="px-5 py-2.5 bg-indigo-900 hover:bg-indigo-700 text-white rounded-full transition">
+              className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition">
               Вход
             </a>
           </div>
