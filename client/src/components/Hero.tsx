@@ -28,9 +28,6 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5">
-            <a href="#countries" className="px-8 py-5 bg-amber-500 hover:bg-amber-600 text-white text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
-              Найти тур мечты
-            </a>
             <a href="#tours" className="px-8 py-5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-lg font-medium rounded-xl border border-white/30 transition-all duration-300">
               Посмотреть направления
             </a>
