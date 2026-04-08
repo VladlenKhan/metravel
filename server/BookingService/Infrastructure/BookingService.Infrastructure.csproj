@@ -7,7 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Application\BookingService.Application.csproj" />
     <ProjectReference Include="..\Domain\BookingService.Domain.csproj" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.0">
@@ -17,3 +16,4 @@
   </ItemGroup>
 
 </Project>
+

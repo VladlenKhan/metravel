@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { FiMapPin, FiClock, FiDollarSign, FiArrowRight } from 'react-icons/fi';
 import { FaPlaneDeparture } from 'react-icons/fa';
+import Testimonials from './Testimonials';
 
 const popularDestinations = [
   { id: 1, name: 'Бали, Индонезия', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', price: 'от 89 000 ₽', days: '10–14 дней' },
@@ -68,8 +69,6 @@ export default function MainContent() {
         </div>
       </section>
 
-
-
       {/* Горящие туры */}
       <section id="countries" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
@@ -101,7 +100,7 @@ export default function MainContent() {
           </div>
         </div>
       </section>
-      
+
       {/* Почему выбирают нас */}
       <section id="about" className="py-16 md:py-20 bg-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
@@ -124,7 +123,7 @@ export default function MainContent() {
           </div>
         </div>
       </section>
-
+      <Testimonials />
       {/* Форма подбора тура */}
       <section id="find" className="py-20 bg-indigo-600 text-white">
         <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-5xl">

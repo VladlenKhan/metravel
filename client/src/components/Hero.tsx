@@ -31,26 +31,23 @@ export default function Hero() {
           </p>
 
           <div className="flex flex-col sm:flex-row gap-5">
-            <a href="#countries" className="px-8 py-5 bg-amber-500 hover:bg-amber-600 text-white text-lg font-semibold rounded-xl shadow-xl hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300">
-              Найти тур мечты
-            </a>
             <a href="#tours" className="px-8 py-5 bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white text-lg font-medium rounded-xl border border-white/30 transition-all duration-300">
               Посмотреть направления
             </a>
           </div>
 
           {/* Trust badges */}
-          <div className="flex flex-wrap gap-8 md:gap-12 mt-12 md:mt-16 text-white/90">
+          <div className="flex flex-wrap gap-8 md:gap-12 mt-12 mb-6  md:mt-16 text-white/90">
             <div>
-              <div className="text-3xl md:text-4xl font-bold">8 лет</div>
+              <div className="text-3xl md:text-4xl font-bold">3 года</div>
               <div className="text-sm md:text-base">на рынке</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold">24 000+</div>
+              <div className="text-3xl md:text-4xl font-bold">1 000+</div>
               <div className="text-sm md:text-base">счастливых туристов</div>
             </div>
             <div>
-              <div className="text-3xl md:text-4xl font-bold">97%</div>
+              <div className="text-3xl md:text-4xl font-bold">95%</div>
               <div className="text-sm md:text-base">рекомендуют нас</div>
             </div>
           </div>

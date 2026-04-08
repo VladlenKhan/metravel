@@ -13,12 +13,5 @@ public interface ITourService
     Task<TourDto?> UpdateAsync(Guid id, TourDto dto, CancellationToken cancellationToken = default);
 
     Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
-
-    Task<IReadOnlyList<TourLinkedServiceDto>?> GetServicesAsync(Guid tourId, CancellationToken cancellationToken = default);
-
-    Task<TourLinkedServiceDto?> AddServiceAsync(Guid tourId, CreateTourServiceDto dto, CancellationToken cancellationToken = default);
-
-    Task<TourLinkedServiceDto?> UpdateServiceAsync(Guid tourId, Guid serviceId, UpdateTourServiceDto dto, CancellationToken cancellationToken = default);
-
-    Task<bool> DeleteServiceAsync(Guid tourId, Guid serviceId, CancellationToken cancellationToken = default);
+    
 }

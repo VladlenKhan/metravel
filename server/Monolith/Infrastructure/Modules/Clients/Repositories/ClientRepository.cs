@@ -30,30 +30,16 @@ public class ClientRepository : IClientRepository
 
     public async Task<bool> ExistsByEmailAsync(string email, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Clients
+        return await _dbContext.Clients
             .AsNoTracking()
-            .Where(c => c.Email == email);
-
-        if (excludeId.HasValue)
-        {
-            query = query.Where(c => c.Id != excludeId.Value);
-        }
-
-        return await query.AnyAsync(cancellationToken);
+            .AnyAsync(c => c.Email == email && (!excludeId.HasValue || c.Id != excludeId.Value), cancellationToken);
     }
 
     public async Task<bool> ExistsByPassportNumberAsync(string passportNumber, Guid? excludeId = null, CancellationToken cancellationToken = default)
     {
-        var query = _dbContext.Clients
+        return await _dbContext.Clients
             .AsNoTracking()
-            .Where(c => c.PassportNumber == passportNumber);
-
-        if (excludeId.HasValue)
-        {
-            query = query.Where(c => c.Id != excludeId.Value);
-        }
-
-        return await query.AnyAsync(cancellationToken);
+            .AnyAsync(c => c.PassportNumber == passportNumber && (!excludeId.HasValue || c.Id != excludeId.Value), cancellationToken);
     }
 
     public async Task<Client> AddAsync(Client client, CancellationToken cancellationToken = default)
