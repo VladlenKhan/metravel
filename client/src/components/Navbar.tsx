@@ -72,7 +72,7 @@ export default function Navbar() {
           {/* Desktop Buttons ≥1170px */}
           <div className="hidden min-[1170px]:flex items-center gap-3">
             <a
-              href="#contacts"
+              href="#find"
               className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full transition">
               Подобрать тур
             </a>
