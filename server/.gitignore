@@ -1,0 +1,157 @@
+# .NET / Visual Studio / JetBrains Rider / VS Code
+
+## Build results
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+**/artifacts/
+**/publish/
+**/AppPackages/
+**/*.dbmdl
+**/*.jfm
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+## Visual Studio
+.vs/
+
+## JetBrains Rider / IntelliJ
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+
+## NuGet
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/project.assets.json
+**/project.nuget.cache
+**/*.nuget.dgspec.json
+**/*.nuget.g.props
+**/*.nuget.g.targets
+
+## Logs & temp
+*.log
+*.tmp
+*.temp
+*.bak
+*.cache
+*.pid
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Local env/secrets (keep appsettings.json tracked)
+.env
+.env.*
+!.env.example
+
+**/appsettings.*.json
+!**/appsettings.json
+**/*.secrets.json
+**/secrets.json
+
+## ASP.NET Core / IIS Express
+**/iisexpress/
+**/aspnetcorev2_inprocess.dll
+
+## Coverage
+**/coverage/
+**/coverage*.xml
+**/coverage*.json
+**/*.coverage
+**/*.coveragexml
+
+## Azure / local settings
+local.settings.json
+
+# .NET / Visual Studio / JetBrains Rider / VS Code
+
+## Build results
+**/bin/
+**/obj/
+**/out/
+**/TestResults/
+**/artifacts/
+**/publish/
+**/AppPackages/
+**/*.dbmdl
+**/*.jfm
+
+## User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+*.VC.VC.opendb
+
+## Visual Studio
+.vs/
+
+## JetBrains Rider / IntelliJ
+.idea/
+*.sln.iml
+
+## VS Code
+.vscode/
+
+## NuGet
+**/packages/
+**/*.nupkg
+**/*.snupkg
+**/project.assets.json
+**/project.nuget.cache
+**/*.nuget.dgspec.json
+**/*.nuget.g.props
+**/*.nuget.g.targets
+
+## Logs & temp
+*.log
+*.tmp
+*.temp
+*.bak
+*.cache
+*.pid
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Local env/secrets (keep appsettings.json tracked)
+.env
+.env.*
+!.env.example
+
+**/appsettings.*.json
+!**/appsettings.json
+**/*.secrets.json
+**/secrets.json
+
+## ASP.NET Core / IIS Express
+**/iisexpress/
+**/aspnetcorev2_inprocess.dll
+
+## Coverage
+**/coverage/
+**/coverage*.xml
+**/coverage*.json
+**/*.coverage
+**/*.coveragexml
+
+## Azure / local settings
+local.settings.json
+
+
