@@ -71,16 +71,9 @@ export default function Navbar() {
 
           {/* Desktop Buttons ≥1170px */}
           <div className="hidden min-[1170px]:flex items-center gap-3">
-            <a
-<<<<<<< HEAD
-=======
-              href="#find"
-              className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white rounded-full transition">
-              Подобрать тур
-            </a>
+ 
 
             <a
->>>>>>> c066241e075496449384c2e1525618753e052622
               href="/register"
               className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full transition">
               Регистрация
@@ -120,11 +113,7 @@ export default function Navbar() {
           ))}
 
           <div className="flex flex-col gap-3 pt-4">
-            <a
-              href="#find"
-              className="w-full text-center py-3 bg-indigo-600 text-white rounded-xl">
-              Подобрать тур
-            </a>
+ 
 
             <a
               href="/register"
