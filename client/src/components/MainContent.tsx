@@ -156,7 +156,7 @@ export default function MainContent() {
               type="submit"
               className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
             >
-              Подобрать тур
+              Подобрать тур 
             </button>
           </form>
         </div>
