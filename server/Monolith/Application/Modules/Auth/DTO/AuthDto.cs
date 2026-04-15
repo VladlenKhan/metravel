@@ -1,3 +1,5 @@
+namespace Application.Modules.Auth.DTO;
+
 public record RegisterDto(
     string FullName,
     string Email,

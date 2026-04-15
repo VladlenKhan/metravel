@@ -1,5 +1,6 @@
 using System.Text;
 using Application.Modules.Messaging.Interfaces;
+using Microsoft.Extensions.Configuration;
 using RabbitMQ.Client;
 
 namespace Infrastructure.Modules.Messaging;
@@ -9,13 +10,15 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
     private readonly IConnection _connection;
     private readonly IModel _channel;
 
-    public RabbitMqPublisher()
+    public RabbitMqPublisher(IConfiguration configuration)
     {
         var factory = new ConnectionFactory
         {
-            HostName = "localhost",
-            UserName = "guest",
-            Password = "guest"
+            HostName = configuration["RabbitMq:Host"] ?? "localhost",
+            Port = int.TryParse(configuration["RabbitMq:Port"], out var port) ? port : 5672,
+            VirtualHost = configuration["RabbitMq:VirtualHost"] ?? "/",
+            UserName = configuration["RabbitMq:Username"] ?? "guest",
+            Password = configuration["RabbitMq:Password"] ?? "guest"
         };
 
         _connection = factory.CreateConnection();
@@ -48,4 +51,3 @@ public class RabbitMqPublisher : IRabbitMqPublisher, IDisposable
         _connection.Close();
     }
 }
-

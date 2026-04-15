@@ -51,8 +51,6 @@ public class ClientService : IClientService
         existing.PassportNumber = dto.PassportNumber;
         existing.IsRegular = dto.IsRegular;
         existing.Email = dto.Email;
-        existing.PasswordHash = dto.PasswordHash;
-        existing.Role = dto.Role;
 
         var updated = await _clientRepository.UpdateAsync(existing, cancellationToken);
         return updated is null ? null : MapToDto(updated);
@@ -91,9 +89,7 @@ public class ClientService : IClientService
             PhoneNumber = client.PhoneNumber,
             PassportNumber = client.PassportNumber,
             IsRegular = client.IsRegular,
-            Email = client.Email,
-            PasswordHash = client.PasswordHash,
-            Role = client.Role
+            Email = client.Email
         };
     }
 
@@ -106,9 +102,7 @@ public class ClientService : IClientService
             PhoneNumber = dto.PhoneNumber,
             PassportNumber = dto.PassportNumber,
             IsRegular = dto.IsRegular,
-            Email = dto.Email,
-            PasswordHash = dto.PasswordHash,
-            Role = dto.Role
+            Email = dto.Email
         };
     }
 }
