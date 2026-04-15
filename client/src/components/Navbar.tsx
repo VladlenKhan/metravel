@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { FiMenu, FiX, FiChevronDown } from "react-icons/fi";
 import Logo from "../assets/images/metravel-logo.svg";
+import { Link } from 'react-router-dom';
 
 interface NavLink {
   name: string;
@@ -16,6 +17,7 @@ const navLinks: NavLink[] = [
   { name: "О нас", href: "/#about" },
   { name: "Контакты", href: "#contacts" },
 ];
+
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
