@@ -2,5 +2,7 @@ export interface UserRoleData {
   id: string;
   email: string;
   fullName: string;
-  roles: string[];
+  role: "Admin" | "Operator" | "Client";
+  isActive: boolean;
+  clientId: string | null;
 }

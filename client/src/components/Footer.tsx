@@ -1,12 +1,12 @@
 // src/components/Footer.tsx
-import { FiMapPin, FiPhone, FiMail, FiInstagram, FiFacebook, FiTwitter } from 'react-icons/fi';
+import { FiMail, FiMapPin, FiPhone } from 'react-icons/fi';
 import Logo from '../assets/images/metravel-logo-alt.svg';
 
 export default function Footer() {
   return (
     <footer id="contacts"  className="bg-gray-900 text-gray-300">
       <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl pt-16 pb-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 md:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 md:gap-12">
         
           <div>
             <div className="flex items-center gap-3 mb-6">
@@ -18,13 +18,9 @@ export default function Footer() {
               </span>
             </div>
             <p className="mb-6 leading-relaxed">
-              Создаём незабываемые путешествия с 2018 года. Более 24 000 довольных клиентов уже открыли мир вместе с нами.
+              Создаём незабываемые путешествия с 2023 года. Более 1000 довольных клиентов уже открыли мир вместе с нами.
             </p>
-            <div className="flex gap-5">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-xl"><FiInstagram /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-xl"><FiFacebook /></a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors text-xl"><FiTwitter /></a>
-            </div>
+ 
           </div>
 
           {/* Навигация */}
@@ -35,18 +31,6 @@ export default function Footer() {
               <li><a href="/tours" className="hover:text-white transition-colors">Туры</a></li>
               <li><a href="/#countries" className="hover:text-white transition-colors">Страны</a></li>
               <li><a href="/#about" className="hover:text-white transition-colors">О компании</a></li> 
-            </ul>
-          </div>
-
-          {/* Услуги */}
-          <div>
-            <h4 className="text-white text-lg font-semibold mb-6">Услуги</h4>
-            <ul className="space-y-3">
-              <li><a href="#" className="hover:text-white transition-colors">Горящие туры</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Экскурсионные туры</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Пляжный отдых</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Горнолыжные туры</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Индивидуальные туры</a></li>
             </ul>
           </div>
 
@@ -71,7 +55,7 @@ export default function Footer() {
         </div>
 
         <div className="border-t border-gray-800 mt-16 pt-8 text-center text-sm">
-          <p>© 2018–{new Date().getFullYear()} MeTravel. Все права защищены.</p>
+          <p>© 2023–{new Date().getFullYear()} MeTravel. Все права защищены.</p>
           <p className="mt-2 text-gray-500">
             Политика конфиденциальности • Публичная оферта • Согласие на обработку персональных данных
           </p>

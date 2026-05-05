@@ -1,33 +1,30 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate } from "react-router-dom";
+import type { UserRole } from "../../api/api";
+import { useAuthSession } from "../../hooks/useAuthSession";
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: string;
+  requiredRole?: UserRole;
+  allowedRoles?: UserRole[];
 }
 
-export const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const token = localStorage.getItem('token'); // Или ваш способ хранения токена
+export const ProtectedRoute = ({
+  children,
+  requiredRole,
+  allowedRoles,
+}: ProtectedRouteProps) => {
+  const session = useAuthSession();
 
-  if (!token) return <Navigate to="/login" replace />;
+  if (!session?.token) {
+    return <Navigate to="/login" replace />;
+  }
 
-  if (requiredRole) {
-    try {
-      // Декодируем payload JWT
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      
-      // В ASP.NET Identity роли обычно хранятся в этом ключе:
-      const roleClaim = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
-      const userRoles = payload[roleClaim] || payload.role || [];
-      
-      const rolesArray = Array.isArray(userRoles) ? userRoles : [userRoles];
-      
-      if (!rolesArray.includes(requiredRole)) {
-        console.warn("Доступ запрещен: недостаточно прав.");
-        return <Navigate to="/" replace />;
-      }
-    } catch (e) {
-      return <Navigate to="/login" replace />;
-    }
+  if (requiredRole && session.role !== requiredRole) {
+    return <Navigate to="/" replace />;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(session.role)) {
+    return <Navigate to="/" replace />;
   }
 
   return <>{children}</>;

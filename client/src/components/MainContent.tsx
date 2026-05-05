@@ -1,164 +1,328 @@
-// src/components/MainContent.tsx
-import { useState } from 'react';
-import { FiMapPin, FiClock, FiDollarSign, FiArrowRight } from 'react-icons/fi';
-import { FaPlaneDeparture } from 'react-icons/fa';
-import Testimonials from './Testimonials';
-
-const popularDestinations = [
-  { id: 1, name: 'Бали, Индонезия', image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800', price: 'от 89 000 ₽', days: '10–14 дней' },
-  { id: 2, name: 'Мальдивы', image: 'https://images.unsplash.com/photo-1514282401047-dab278ca7553?w=800', price: 'от 145 000 ₽', days: '7–12 дней' },
-  { id: 3, name: 'Турция, Анталья', image: 'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=800', price: 'от 65 000 ₽', days: '7–10 дней' },
-  { id: 4, name: 'ОАЭ, Дубай', image: 'https://images.unsplash.com/photo-1548685913-fe6678babe8d?w=800', price: 'от 78 000 ₽', days: '5–9 дней' },
-];
+import { useEffect } from "react";
+import { FiAlertCircle, FiArrowRight, FiClock, FiDollarSign, FiMapPin } from "react-icons/fi";
+import { FaPlaneDeparture } from "react-icons/fa";
+import { Link } from "react-router-dom";
+import Testimonials from "./Testimonials";
+import TourCardActions from "./TourCardActions";
+import TourCard from "./TourCard";
+import { useAuthSession } from "../hooks/useAuthSession";
+import { useFavoriteTours } from "../hooks/useFavoriteTours";
+import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
+import { useTourBooking } from "../hooks/useTourBooking";
+import { useTours } from "../hooks/useTours";
 
 const whyUs = [
-  { icon: FiClock, title: 'Круглосуточная поддержка', desc: '24/7 на связи в чате, по телефону и WhatsApp' },
-  { icon: FaPlaneDeparture, title: 'Проверенные отели', desc: 'Только те, где сами отдыхали и рекомендуем' },
-  { icon: FiDollarSign, title: 'Лучшие цены', desc: 'Гарантия лучшей цены или вернём разницу' },
-  { icon: FiMapPin, title: 'Авторские маршруты', desc: 'Не шаблонные туры, а настоящие приключения' },
+  {
+    icon: FiClock,
+    title: "Круглосуточная поддержка",
+    desc: "24/7 на связи в чате, по телефону и WhatsApp",
+  },
+  {
+    icon: FaPlaneDeparture,
+    title: "Проверенные маршруты",
+    desc: "Собираем направления, которые хочется рекомендовать друзьям и выбирать снова.",
+  },
+  {
+    icon: FiDollarSign,
+    title: "Актуальные цены",
+    desc: "Показываем свежие предложения, чтобы вы могли спокойно планировать поездку по своему бюджету.",
+  },
+  {
+    icon: FiMapPin,
+    title: "Удобный выбор",
+    desc: "Новые предложения быстро появляются в каталоге, чтобы лучшие варианты не проходили мимо.",
+  },
 ];
 
+const HOME_TOUR_LIMIT = 3;
+
+function byLowestPrice(a: { basePrice: number }, b: { basePrice: number }) {
+  return a.basePrice - b.basePrice;
+}
+
+function byClosestDate(a: { startDate: string }, b: { startDate: string }) {
+  return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+}
+
 export default function MainContent() {
-  const [activeTab, setActiveTab] = useState<'beach' | 'excursion' | 'ski'>('beach');
+  const session = useAuthSession();
+  const { tours, loading, error } = useTours();
+  const { isFavorite, toggleFavorite, isAvailable: favoritesAvailable } = useFavoriteTours();
+  const {
+    loading: profileLoading,
+    error: profileError,
+    isComplete: profileComplete,
+  } = useClientProfileStatus();
+  const {
+    bookingTourId,
+    bookingFeedback,
+    handleBooking,
+    clearBookingFeedback,
+    getTourBookingLockLabel,
+  } =
+    useTourBooking();
+  const featuredTours = [...tours].sort(byLowestPrice).slice(0, HOME_TOUR_LIMIT);
+  const upcomingTours = [...tours].sort(byClosestDate).slice(0, HOME_TOUR_LIMIT);
+  const openTravelAssistant = () => {
+    window.dispatchEvent(
+      new CustomEvent("metravel-open-travel-chat", {
+        detail: { restart: true },
+      })
+    );
+  };
+
+  useEffect(() => {
+    if (!bookingFeedback) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      clearBookingFeedback();
+    }, 4500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [bookingFeedback, clearBookingFeedback]);
 
   return (
-    <main className="pt-8 pb-20 bg-gray-50">
-      {/* Популярные направления */}
+    <main className="bg-gray-50 pb-20 pt-8">
+      {bookingFeedback ? (
+        <div className="pointer-events-none fixed right-5 top-24 z-40 w-[min(92vw,420px)]">
+          <div
+            className={`rounded-[24px] px-5 py-4 text-sm shadow-[0_18px_50px_rgba(15,23,42,0.18)] ${
+              bookingFeedback.type === "success"
+                ? "border border-emerald-200 bg-white text-emerald-700"
+                : "border border-red-200 bg-white text-red-700"
+            }`}
+          >
+            <div className="font-semibold">
+              {bookingFeedback.type === "success"
+                ? "Тур успешно забронирован"
+                : "Не удалось оформить бронирование"}
+            </div>
+            <div className="mt-1 leading-6 text-slate-600">{bookingFeedback.message}</div>
+          </div>
+        </div>
+      ) : null}
+
       <section id="tours" className="py-16 md:py-20">
-        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Популярные направления
-            </h2>
-            <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-              Самые востребованные туры на 2026 год
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+          <div className="mb-12 text-center md:mb-16">
+            <p className="mb-4 inline-flex rounded-full bg-sky-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-sky-700">
+              Популярные туры
             </p>
+            <h2 className="mb-4 text-3xl font-bold text-gray-900 md:text-5xl">
+              Направления, которые особенно любят наши путешественники
+            </h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-            {popularDestinations.map((dest) => (
-              <a href="#"
-                key={dest.id}
-                className="group relative overflow-hidden rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 bg-white"
-              >
-                <div className="aspect-[4/5] relative">
-                  <img
-                    src={dest.image}
-                    alt={dest.name}
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                    <h3 className="text-xl md:text-2xl font-bold mb-1">{dest.name}</h3>
-                    <p className="text-white/90 text-sm md:text-base">{dest.days}</p>
-                    <p className="text-amber-300 font-bold mt-2 text-lg md:text-xl">{dest.price}</p>
-                  </div>
-                </div>
-                <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full text-indigo-700 font-medium text-sm">
-                  Горящий тур
-                </div>
-              </a>
-            ))}
-          </div>
+          {loading ? (
+            <div className="flex flex-col gap-6">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[400px] animate-pulse rounded-[28px] bg-white shadow-sm"
+                />
+              ))}
+            </div>
+          ) : error ? (
+            <div className="rounded-[28px] border border-red-200 bg-red-50 px-6 py-10 text-center text-red-700">
+              <div className="mb-3 inline-flex items-center gap-2 text-base font-semibold">
+                <FiAlertCircle />
+                Не удалось открыть подборку туров
+              </div>
+              <p className="text-sm md:text-base">{error}</p>
+            </div>
+          ) : featuredTours.length === 0 ? (
+            <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-12 text-center text-slate-600">
+              Скоро здесь появятся новые направления для путешествий.
+            </div>
+          ) : (
+            <div className="flex flex-col gap-6">
+              {featuredTours.map((tour, index) => (
+                <TourCard
+                  key={tour.id}
+                  tour={tour}
+                  index={index}
+                  badge="Хит"
+                  footer={
+                    <TourCardActions
+                      tour={tour}
+                      session={session}
+                      profileLoading={profileLoading}
+                      profileComplete={profileComplete}
+                      profileError={profileError}
+                      bookingTourId={bookingTourId}
+                      bookingLockLabel={getTourBookingLockLabel(tour.id)}
+                      onBook={handleBooking}
+                      showFavoriteButton={favoritesAvailable}
+                      isFavorite={isFavorite(tour.id)}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  }
+                />
+              ))}
+            </div>
+          )}
 
-          <div className="text-center mt-12">
-            <a href="/tours" className="inline-flex items-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-xl shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-              Показать все направления <FiArrowRight />
-            </a>
+          <div className="mt-12 text-center">
+            <Link
+              to="/tours"
+              className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-8 py-4 font-medium text-white shadow-lg transition-all hover:-translate-y-1 hover:bg-indigo-700 hover:shadow-xl"
+            >
+              Открыть весь каталог <FiArrowRight />
+            </Link>
           </div>
         </div>
       </section>
 
-      {/* Горящие туры */}
-      <section id="countries" className="py-16 md:py-20 bg-gradient-to-b from-gray-50 to-white">
-        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
-          <div className="text-center mb-10 md:mb-14">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Горящие предложения
-            </h2>
+      <section id="countries" className="bg-gradient-to-b from-gray-50 to-white py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+          <div className="mb-10 text-center md:mb-14">
+            <p className="mb-4 inline-flex rounded-full bg-amber-100 px-4 py-1 text-xs font-semibold uppercase tracking-[0.26em] text-amber-700">
+              Ближайшие выезды
+            </p>
+            <h2 className="text-3xl font-bold text-gray-900 md:text-5xl">Что стартует раньше всего</h2>
           </div>
 
-          <div className="flex justify-center gap-4 mb-10 flex-wrap">
-            {['Пляжный отдых', 'Экскурсии', 'Горные туры'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab === 'Пляжный отдых' ? 'beach' : tab === 'Экскурсии' ? 'excursion' : 'ski')}
-                className={`px-6 py-3 rounded-full font-medium transition-all ${(tab === 'Пляжный отдых' && activeTab === 'beach') ||
-                  (tab === 'Экскурсии' && activeTab === 'excursion') ||
-                  (tab === 'Горные туры' && activeTab === 'ski')
-                  ? 'bg-indigo-600 text-white shadow-lg'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-                  }`}
-              >
-                {tab}
-              </button>
-            ))}
-          </div>
-
-          <div className="text-center py-12 text-gray-500">
-            Карточки туров по выбранной категории (реализуйте по аналогии с popularDestinations)
-          </div>
+          {loading ? (
+            <div className="flex flex-col gap-6">
+              {Array.from({ length: 3 }).map((_, index) => (
+                <div
+                  key={index}
+                  className="h-[400px] animate-pulse rounded-[28px] bg-white shadow-sm"
+                />
+              ))}
+            </div>
+          ) : upcomingTours.length > 0 ? (
+            <div className="flex flex-col gap-6">
+              {upcomingTours.map((tour, index) => (
+                <TourCard
+                  key={tour.id}
+                  tour={tour}
+                  index={index + 1}
+                  badge="Скоро"
+                  footer={
+                    <TourCardActions
+                      tour={tour}
+                      session={session}
+                      profileLoading={profileLoading}
+                      profileComplete={profileComplete}
+                      profileError={profileError}
+                      bookingTourId={bookingTourId}
+                      bookingLockLabel={getTourBookingLockLabel(tour.id)}
+                      onBook={handleBooking}
+                      showFavoriteButton={favoritesAvailable}
+                      isFavorite={isFavorite(tour.id)}
+                      onToggleFavorite={toggleFavorite}
+                    />
+                  }
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="rounded-[28px] border border-slate-200 bg-white px-6 py-12 text-center text-slate-600">
+              Скоро здесь появятся новые даты ближайших выездов.
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Почему выбирают нас */}
-      <section id="about" className="py-16 md:py-20 bg-white">
-        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl">
-          <div className="text-center mb-12 md:mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
-              Почему выбирают MeTravel
-            </h2>
+      <section id="about" className="bg-white py-16 md:py-20">
+        <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
+          <div className="mb-12 text-center md:mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 md:text-5xl">Почему выбирают MeTravel</h2>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-10">
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:gap-10">
             {whyUs.map((item, idx) => (
-              <div key={idx} className="text-center px-4">
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-indigo-100 flex items-center justify-center text-indigo-600 text-3xl">
+              <div key={idx} className="px-4 text-center">
+                <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-indigo-100 text-3xl text-indigo-600">
                   <item.icon />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-3">{item.title}</h3>
+                <h3 className="mb-3 text-xl font-bold text-gray-900">{item.title}</h3>
                 <p className="text-gray-600">{item.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
       <Testimonials />
-      {/* Форма подбора тура */}
-      <section id="find" className="py-20 bg-indigo-600 text-white">
-        <div className="mx-auto px-5 sm:px-8 lg:px-12 max-w-5xl">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">
-              Подберём идеальный тур за 5 минут
-            </h2>
+
+      <section id="find" className="bg-indigo-600 py-20 text-white">
+        <div className="mx-auto max-w-5xl px-5 sm:px-8 lg:px-12">
+          <div className="mb-10 text-center">
+            <h2 className="mb-4 text-3xl font-bold md:text-5xl">Подберём идеальный тур за 5 минут</h2>
             <p className="text-xl opacity-90">
-              Оставьте заявку — менеджер свяжется с вами и предложит лучшие варианты
+              Можно сразу перейти в каталог или открыть чат-помощник, который задаст несколько коротких вопросов.
             </p>
           </div>
 
-          <form className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-5xl mx-auto">
-            <input
-              type="text"
-              placeholder="Куда хотите поехать?"
-              className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:border-white/40 transition"
-            />
-            <input
-              type="text"
-              placeholder="Даты поездки"
-              className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:border-white/40 transition"
-            />
-            <input
-              type="text"
-              placeholder="Количество человек"
-              className="px-6 py-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder:text-white/60 focus:outline-none focus:border-white/40 transition"
-            />
+          <div className="mx-auto grid max-w-5xl gap-5 md:grid-cols-3">
+            <div className="rounded-[28px] border border-white/15 bg-white/10 px-6 py-6 backdrop-blur-sm">
+              <div className="text-sm uppercase tracking-[0.18em] text-white/60">Шаг 1</div>
+              <div className="mt-3 text-2xl font-semibold">Откройте чат-помощник</div>
+              <p className="mt-3 text-white/80">
+                Бот подскажет направление, бюджет и длительность поездки, а затем предложит туры.
+              </p>
+            </div>
+
+            <div className="rounded-[28px] border border-white/15 bg-white/10 px-6 py-6 backdrop-blur-sm">
+              <div className="text-sm uppercase tracking-[0.18em] text-white/60">Шаг 2</div>
+              <div className="mt-3 text-2xl font-semibold">Сравните варианты</div>
+              <p className="mt-3 text-white/80">
+                Выберите тур из каталога, проверьте даты, услуги и наличие свободных мест.
+              </p>
+            </div>
+
+            <div className="rounded-[28px] border border-white/15 bg-white/10 px-6 py-6 backdrop-blur-sm">
+              <div className="text-sm uppercase tracking-[0.18em] text-white/60">Шаг 3</div>
+              <div className="mt-3 text-2xl font-semibold">Отправьте бронирование</div>
+              <p className="mt-3 text-white/80">
+                После заявки статус поездки появится в личном кабинете, а менеджер сможет продолжить сопровождение.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
             <button
-              type="submit"
-              className="px-8 py-4 bg-amber-500 hover:bg-amber-600 text-white font-semibold rounded-xl shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1"
+              type="button"
+              onClick={openTravelAssistant}
+              className="rounded-xl bg-amber-500 px-8 py-4 font-semibold text-white shadow-xl transition-all hover:-translate-y-1 hover:bg-amber-600 hover:shadow-2xl"
             >
-              Подобрать тур
+              Открыть чат-помощник
             </button>
-          </form>
+
+            <Link
+              to="/tours"
+              className="rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-white transition hover:bg-white/15"
+            >
+              Перейти в каталог
+            </Link>
+
+            {session?.role === "Client" ? (
+              <Link
+                to="/bookings"
+                className="rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-white transition hover:bg-white/15"
+              >
+                Мои бронирования
+              </Link>
+            ) : session ? (
+              <Link
+                to="/admin"
+                className="rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-white transition hover:bg-white/15"
+              >
+                Панель сотрудника
+              </Link>
+            ) : (
+              <Link
+                to="/register"
+                className="rounded-xl border border-white/20 bg-white/10 px-8 py-4 font-semibold text-white transition hover:bg-white/15"
+              >
+                Создать аккаунт
+              </Link>
+            )}
+          </div>
         </div>
       </section>
     </main>

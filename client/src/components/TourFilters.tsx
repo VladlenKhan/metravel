@@ -1,34 +1,30 @@
-// src/components/TourFilters.tsx
-import { useState, useMemo } from 'react';
-import { Search, X } from 'lucide-react'; // если lucide-react установлен
+import { Search, X } from "lucide-react";
+import {
+  FIELD_LIMITS,
+  sanitizeIntegerInput,
+  sanitizeShortTextInput,
+} from "../lib/formSanitizers";
+
+export type TourFilterValues = {
+  search: string;
+  minPrice: number;
+  maxPrice: number;
+};
 
 interface TourFiltersProps {
-  onFilterChange: (filters: {
-    search: string;
-    minPrice: number;
-    maxPrice: number;
-  }) => void;
+  filters: TourFilterValues;
+  onFilterChange: (filters: TourFilterValues) => void;
 }
 
-export default function TourFilters({ onFilterChange }: TourFiltersProps) {
-  const [search, setSearch] = useState('');
-  const [minPrice, setMinPrice] = useState<number | ''>('');
-  const [maxPrice, setMaxPrice] = useState<number | ''>('');
-
-  // Debounce-like: передаём изменения родителю только когда удобно
-  useMemo(() => {
+export default function TourFilters({ filters, onFilterChange }: TourFiltersProps) {
+  const updateFilters = (nextFilters: Partial<TourFilterValues>) => {
     onFilterChange({
-      search: search.trim().toLowerCase(),
-      minPrice: typeof minPrice === 'number' ? minPrice : 0,
-      maxPrice: typeof maxPrice === 'number' ? maxPrice : Infinity,
+      ...filters,
+      ...nextFilters,
     });
-  }, [search, minPrice, maxPrice, onFilterChange]);
-
-  const resetFilters = () => {
-    setSearch('');
-    setMinPrice('');
-    setMaxPrice('');
   };
+
+  const resetFilters = () => onFilterChange({ search: "", minPrice: 0, maxPrice: Infinity });
 
   return (
     <div className="mb-10 md:mb-12">
@@ -41,13 +37,18 @@ export default function TourFilters({ onFilterChange }: TourFiltersProps) {
           <div className="relative">
             <input
               type="text"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              value={filters.search}
+              onChange={(event) =>
+                updateFilters({
+                  search: sanitizeShortTextInput(event.target.value, FIELD_LIMITS.search),
+                })
+              }
               placeholder="Бали, Мальдивы, Турция..."
               className="
                 w-full rounded-lg border border-gray-300 px-4 py-3 pl-11
                 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
               "
+              maxLength={FIELD_LIMITS.search}
             />
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           </div>
@@ -61,13 +62,27 @@ export default function TourFilters({ onFilterChange }: TourFiltersProps) {
           <input
             type="number"
             min={0}
-            value={minPrice}
-            onChange={(e) => setMinPrice(e.target.value ? Number(e.target.value) : '')}
+            max={FIELD_LIMITS.price}
+            value={filters.minPrice > 0 ? String(filters.minPrice) : ""}
+            onChange={(event) =>
+              updateFilters({
+                minPrice: event.target.value
+                  ? Number(
+                      sanitizeIntegerInput(event.target.value, {
+                        min: 0,
+                        max: FIELD_LIMITS.price,
+                      })
+                    )
+                  : 0,
+              })
+            }
             placeholder="0"
             className="
               w-full rounded-lg border border-gray-300 px-4 py-3
               focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
             "
+            inputMode="numeric"
+            step="1"
           />
         </div>
 
@@ -79,19 +94,34 @@ export default function TourFilters({ onFilterChange }: TourFiltersProps) {
           <input
             type="number"
             min={0}
-            value={maxPrice}
-            onChange={(e) => setMaxPrice(e.target.value ? Number(e.target.value) : '')}
+            max={FIELD_LIMITS.price}
+            value={Number.isFinite(filters.maxPrice) ? String(filters.maxPrice) : ""}
+            onChange={(event) =>
+              updateFilters({
+                maxPrice: event.target.value
+                  ? Number(
+                      sanitizeIntegerInput(event.target.value, {
+                        min: 0,
+                        max: FIELD_LIMITS.price,
+                      })
+                    )
+                  : Infinity,
+              })
+            }
             placeholder="∞"
             className="
               w-full rounded-lg border border-gray-300 px-4 py-3
               focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
             "
+            inputMode="numeric"
+            step="1"
           />
         </div>
 
         {/* Кнопки */}
         <div className="flex items-end gap-3 self-end">
           <button
+            type="button"
             onClick={resetFilters}
             className="
               flex items-center gap-2 rounded-lg border border-gray-300 px-5 py-3
