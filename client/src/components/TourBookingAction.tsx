@@ -28,9 +28,10 @@ export default function TourBookingAction({
       <div className="space-y-3">
         <Link
           to="/login"
-          className="block rounded-full bg-slate-900 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-slate-800"
+          className="block rounded-full bg-slate-900 px-4 py-3 text-center text-[13px] font-semibold leading-tight text-white transition hover:bg-slate-800 sm:text-sm"
         >
-          Войти для бронирования
+          <span className="sm:hidden">Войти и забронировать</span>
+          <span className="hidden sm:inline">Войти для бронирования</span>
         </Link>
       </div>
     );
@@ -59,13 +60,13 @@ export default function TourBookingAction({
 
   if (profileError) {
     return (
-      <Link
-        to="/profile"
-        state={{ profileSetupRequired: true }}
-        className="block rounded-full bg-amber-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-amber-600"
-      >
-        Открыть профиль
-      </Link>
+        <Link
+          to="/profile"
+          state={{ profileSetupRequired: true }}
+          className="block rounded-full bg-amber-500 px-4 py-3 text-center text-[13px] font-semibold leading-tight text-white transition hover:bg-amber-600 sm:text-sm"
+        >
+          Открыть профиль
+        </Link>
     );
   }
 
@@ -75,7 +76,7 @@ export default function TourBookingAction({
         <Link
           to="/profile"
           state={{ profileSetupRequired: true }}
-          className="block rounded-full bg-amber-500 px-4 py-3 text-center text-sm font-semibold text-white transition hover:bg-amber-600"
+          className="block rounded-full bg-amber-500 px-4 py-3 text-center text-[13px] font-semibold leading-tight text-white transition hover:bg-amber-600 sm:text-sm"
         >
           Заполнить профиль
         </Link>
@@ -91,7 +92,7 @@ export default function TourBookingAction({
       <button
         type="button"
         disabled
-        className="w-full rounded-full bg-slate-200 px-4 py-3 text-sm font-semibold text-slate-500"
+        className="w-full rounded-full bg-slate-200 px-4 py-3 text-[13px] font-semibold text-slate-500 sm:text-sm"
       >
         Мест нет
       </button>
@@ -108,20 +109,28 @@ export default function TourBookingAction({
       type="button"
       onClick={() => onBook(tour)}
       disabled={isDisabled}
-      className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-sm font-semibold transition disabled:cursor-not-allowed ${
+      className={`flex w-full items-center justify-center gap-2 rounded-full px-4 py-3 text-center text-[13px] font-semibold leading-tight transition disabled:cursor-not-allowed sm:text-sm ${
         isLockedByExistingBooking && !isCurrentTourSubmitting
           ? "bg-slate-200 text-slate-500"
           : "bg-indigo-600 text-white hover:bg-indigo-700 disabled:bg-indigo-400"
       }`}
     >
       {isSubmitting ? <LoaderCircle size={16} className="animate-spin" /> : null}
-      {isCurrentTourSubmitting
-        ? "Отправляем заявку..."
-        : isSubmitting
-          ? "Ожидаем ответ сервера..."
-          : isLockedByExistingBooking
-            ? bookingLockLabel
-            : "Забронировать"}
+      {isCurrentTourSubmitting ? (
+        <>
+          <span className="sm:hidden">Отправляем...</span>
+          <span className="hidden sm:inline">Отправляем заявку...</span>
+        </>
+      ) : isSubmitting ? (
+        <>
+          <span className="sm:hidden">Подождите...</span>
+          <span className="hidden sm:inline">Ожидаем ответ сервера...</span>
+        </>
+      ) : isLockedByExistingBooking ? (
+        bookingLockLabel
+      ) : (
+        "Забронировать"
+      )}
     </button>
   );
 }

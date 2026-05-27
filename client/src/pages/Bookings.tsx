@@ -6,12 +6,10 @@ import { useAuthSession } from "../hooks/useAuthSession";
 import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
 import { useFrontOfficeStore } from "../hooks/useFrontOfficeStore";
 import {
-  saveLocalPayment,
   updateLocalBookingStatus,
   updateLocalPaymentStatus,
   updateLocalPaymentStatusByBookingId,
 } from "../lib/frontOfficeStore";
-import { createLocalGuid } from "../lib/network";
 
 type ClientBookingView = "Created" | "Confirmed" | "Completed" | "Cancelled";
 
@@ -210,24 +208,21 @@ export default function Bookings() {
   const handlePayBooking = (booking: (typeof myBookings)[number]) => {
     const existingPayment = paymentsByBookingId.get(booking.id) ?? null;
 
+    if (!existingPayment || existingPayment.status !== "Pending") {
+      setFeedback({
+        type: "error",
+        message:
+          "Оплата пока недоступна. Дождитесь, пока менеджер или администратор выставит счет.",
+      });
+      return;
+    }
+
     setFeedback(null);
     setPendingBookingId(booking.id);
     setPendingAction("pay");
 
     try {
-      if (existingPayment) {
-        updateLocalPaymentStatus(existingPayment.id, "Paid");
-      } else {
-        saveLocalPayment({
-          id: createLocalGuid(),
-          bookingId: booking.id,
-          clientId: booking.clientId,
-          clientFullName: booking.clientFullName,
-          tourTitle: booking.tourTitle,
-          amount: booking.totalPrice,
-          status: "Paid",
-        });
-      }
+      updateLocalPaymentStatus(existingPayment.id, "Paid");
 
       setFeedback({
         type: "success",
@@ -275,9 +270,11 @@ export default function Bookings() {
     const isCancellingBooking = isBookingActionPending && pendingAction === "cancel";
     const isPayingBooking = isBookingActionPending && pendingAction === "pay";
     const canPayBooking =
-      shouldShowPayment && booking.status !== "Completed" && payment?.status !== "Paid";
-    const paymentActionLabel =
-      payment?.status === "Cancelled" ? "Оплатить повторно" : "Оплатить";
+      shouldShowPayment && booking.status !== "Completed" && payment?.status === "Pending";
+    const shouldShowAwaitInvoiceState =
+      shouldShowPayment && booking.status !== "Completed" && !payment;
+    const shouldShowCancelledInvoiceState =
+      shouldShowPayment && booking.status !== "Completed" && payment?.status === "Cancelled";
 
     return (
       <article
@@ -324,11 +321,15 @@ export default function Bookings() {
                 ? "Бронирование отменено, поэтому информация об оплате скрыта."
                 : payment?.status === "Paid"
                   ? "Оплата успешно получена и уже отмечена в системе."
-                  : payment
-                    ? "Оплата уже привязана к заявке. Можно оплатить тур прямо сейчас, и статус обновится у менеджера."
+                  : payment?.status === "Pending"
+                    ? "Менеджер или администратор уже выставил счет. Теперь вы можете оплатить тур."
+                    : payment?.status === "Cancelled"
+                      ? "Счет был отменен. Дождитесь, пока сотрудник выставит новый счет."
+                      : payment
+                        ? "Статус счета обновляется. При необходимости дождитесь действий менеджера."
                     : booking.status === "Completed"
                       ? "Поездка завершена."
-                      : "Можно оплатить тур прямо сейчас, и статус сразу появится в админ-панели."
+                      : "Счет еще не выставлен. Как только менеджер или администратор создаст оплату, здесь появится кнопка для оплаты."
               }
             </div>
 
@@ -341,7 +342,29 @@ export default function Bookings() {
                   className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <CreditCard size={16} />
-                  {isPayingBooking ? "Проводим оплату..." : paymentActionLabel}
+                  {isPayingBooking ? "Проводим оплату..." : "Оплатить"}
+                </button>
+              ) : null}
+
+              {shouldShowAwaitInvoiceState ? (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-400 ring-1 ring-slate-200"
+                >
+                  <CreditCard size={16} />
+                  Счет не выставлен
+                </button>
+              ) : null}
+
+              {shouldShowCancelledInvoiceState ? (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-300 ring-1 ring-rose-200"
+                >
+                  <CreditCard size={16} />
+                  Счет отменен
                 </button>
               ) : null}
 

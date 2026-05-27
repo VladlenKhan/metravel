@@ -4,8 +4,9 @@ import { useAuthSession } from "./useAuthSession";
 import { saveLocalBooking } from "../lib/frontOfficeStore";
 import { useFrontOfficeStore } from "./useFrontOfficeStore";
 import { createLocalGuid, isRecoverableConnectionIssue } from "../lib/network";
+import { getEffectiveTourPrice } from "../lib/pricing";
 
-export function useTourBooking() {
+export function useTourBooking(isRegularClient: boolean = false) {
   const session = useAuthSession();
   const { bookings } = useFrontOfficeStore();
   const [bookingTourId, setBookingTourId] = useState<string | null>(null);
@@ -39,6 +40,27 @@ export function useTourBooking() {
       });
 
     return activeBookings;
+  }, [bookings, session?.email]);
+
+  const unavailableBookingTourIds = useMemo(() => {
+    const sessionEmail = session?.email?.trim().toLowerCase() ?? "";
+    const bookedTours = new Set<string>();
+
+    if (!sessionEmail) {
+      return bookedTours;
+    }
+
+    bookings
+      .filter(
+        (booking) =>
+          booking.status !== "Cancelled" &&
+          booking.clientEmail.trim().toLowerCase() === sessionEmail
+      )
+      .forEach((booking) => {
+        bookedTours.add(booking.tourId);
+      });
+
+    return bookedTours;
   }, [bookings, session?.email]);
 
   const getTourBookingLockLabel = (tourId: string): string | null => {
@@ -75,11 +97,12 @@ export function useTourBooking() {
 
     setBookingFeedback(null);
     setBookingTourId(tour.id);
+    const totalPrice = getEffectiveTourPrice(tour.basePrice, isRegularClient);
 
     try {
       const result = await createBooking({
         tourId: tour.id,
-        totalPrice: tour.basePrice,
+        totalPrice,
         bookingDate: new Date().toISOString(),
       });
 
@@ -94,7 +117,7 @@ export function useTourBooking() {
         tourTitle: tour.title,
         tourCountry: tour.country,
         tourCity: tour.city,
-        totalPrice: tour.basePrice,
+        totalPrice,
         bookingDate: new Date().toISOString(),
         status: "Created",
       });
@@ -116,7 +139,7 @@ export function useTourBooking() {
           tourTitle: tour.title,
           tourCountry: tour.country,
           tourCity: tour.city,
-          totalPrice: tour.basePrice,
+          totalPrice,
           bookingDate: new Date().toISOString(),
           status: "Created",
         });
@@ -146,6 +169,7 @@ export function useTourBooking() {
     bookingTourId,
     isBookingPending: bookingTourId !== null,
     bookingFeedback,
+    unavailableBookingTourIds,
     getTourBookingLockLabel,
     handleBooking,
     clearBookingFeedback: () => setBookingFeedback(null),

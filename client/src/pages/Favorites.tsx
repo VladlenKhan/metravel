@@ -13,14 +13,26 @@ export default function Favorites() {
   const { tours, loading, error } = useTours();
   const { favoriteTourIds, isFavorite, toggleFavorite, favoriteCount, isAvailable } = useFavoriteTours();
   const {
+    profile,
     loading: profileLoading,
     error: profileError,
     isComplete: profileComplete,
   } = useClientProfileStatus();
-  const { bookingFeedback, bookingTourId, handleBooking, getTourBookingLockLabel } =
-    useTourBooking();
+  const isRegularClient = Boolean(profile?.isRegular);
+  const {
+    bookingFeedback,
+    bookingTourId,
+    unavailableBookingTourIds,
+    handleBooking,
+    getTourBookingLockLabel,
+  } =
+    useTourBooking(isRegularClient);
 
-  const favoriteTours = tours.filter((tour) => favoriteTourIds.includes(tour.id));
+  const favoriteTours = tours.filter(
+    (tour) =>
+      favoriteTourIds.includes(tour.id) &&
+      !(session?.role === "Client" && unavailableBookingTourIds.has(tour.id))
+  );
 
   return (
     <>
@@ -82,6 +94,7 @@ export default function Favorites() {
                   tour={tour}
                   index={index}
                   badge="Избранное"
+                  isRegularClient={isRegularClient}
                   footer={
                     <TourCardActions
                       tour={tour}

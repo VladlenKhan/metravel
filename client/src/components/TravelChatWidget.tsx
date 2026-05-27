@@ -4,11 +4,11 @@ import {
   CalendarDays,
   LoaderCircle,
   MapPin,
+  MessageCircle,
   Send,
   Wallet,
   X,
 } from "lucide-react";
-import bearSprite from "../assets/images/bear-sprite.png";
 import {
   fetchTours,
   predictRecommendations,
@@ -51,23 +51,6 @@ type RecommendationDraft = {
   preferredMonth: string;
 };
 
-const BEAR_MESSAGES = [
-  "Привет!",
-  "Пообщаемся?",
-  "Подберем тур?",
-  "Буду рад помочь!",
-  "Жми на меня!",
-];
-const BEAR_FRAME_W = 154;
-const BEAR_FRAME_H = 210;
-const BEAR_COLS = 5;
-const BEAR_ROWS = 7;
-const FRAMES_IDLE = [0, 1, 2, 3, 4];
-const FRAMES_WALK = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14];
-const FRAME_MS_IDLE = 160;
-const FRAME_MS_WALK = 75;
-const WALK_SPEED_PX = 90;
-
 const FALLBACK_COUNTRIES = ["Турция", "Италия", "ОАЭ", "Египет"];
 const FALLBACK_CITIES = ["Стамбул", "Дубай", "Рим", "Анталья"];
 const TRAVEL_CHAT_OPEN_EVENT = "metravel-open-travel-chat";
@@ -89,6 +72,7 @@ const MONTH_OPTIONS: QuickReply[] = [
   { label: "Август", value: "8" },
   { label: "Пропустить", value: "skip" },
 ];
+const DESKTOP_CHAT_HEIGHT = 720;
 
 function createInitialDraft(): RecommendationDraft {
   return {
@@ -309,6 +293,128 @@ function syncRecommendationsWithCatalog(
   });
 }
 
+function buildFallbackRecommendations(
+  payload: RecommendationRequestPayload,
+  catalogTours: Tour[]
+): TourRecommendation[] {
+  const normalizedCountry = payload.country?.trim().toLowerCase() ?? "";
+  const normalizedCity = payload.city?.trim().toLowerCase() ?? "";
+  const preferredBudget = typeof payload.budget === "number" ? payload.budget : null;
+  const preferredDuration =
+    typeof payload.desiredDurationDays === "number" ? payload.desiredDurationDays : null;
+  const preferredMonth =
+    typeof payload.preferredMonth === "number" ? payload.preferredMonth : null;
+
+  return [...catalogTours]
+    .map((tour) => {
+      const tourCountry = tour.country.trim().toLowerCase();
+      const tourCity = tour.city.trim().toLowerCase();
+      const durationDays = getTourDurationDays(tour);
+      const startDate = new Date(tour.startDate);
+      const startMonth = Number.isNaN(startDate.getTime()) ? null : startDate.getMonth() + 1;
+      const explanationParts: string[] = [];
+      let score = 0;
+
+      if (normalizedCountry) {
+        if (tourCountry === normalizedCountry) {
+          score += 4;
+          explanationParts.push("совпадает страна");
+        } else if (
+          tourCountry.includes(normalizedCountry) ||
+          normalizedCountry.includes(tourCountry)
+        ) {
+          score += 2;
+          explanationParts.push("страна близка к запросу");
+        }
+      }
+
+      if (normalizedCity) {
+        if (tourCity === normalizedCity) {
+          score += 5;
+          explanationParts.push("совпадает город");
+        } else if (
+          tourCity.includes(normalizedCity) ||
+          normalizedCity.includes(tourCity)
+        ) {
+          score += 2;
+          explanationParts.push("город близок к запросу");
+        }
+      }
+
+      if (preferredBudget) {
+        if (tour.basePrice <= preferredBudget) {
+          score += 3;
+          explanationParts.push("подходит по бюджету");
+        } else {
+          const overflowRatio = (tour.basePrice - preferredBudget) / preferredBudget;
+          if (overflowRatio <= 0.15) {
+            score += 1;
+            explanationParts.push("немного выше бюджета");
+          }
+        }
+      }
+
+      if (preferredDuration) {
+        const durationDelta = Math.abs(durationDays - preferredDuration);
+        if (durationDelta === 0) {
+          score += 3;
+          explanationParts.push("идеально подходит по длительности");
+        } else if (durationDelta <= 1) {
+          score += 2;
+          explanationParts.push("близко по длительности");
+        } else if (durationDelta <= 3) {
+          score += 1;
+          explanationParts.push("длительность близка к желаемой");
+        }
+      }
+
+      if (preferredMonth && startMonth) {
+        const monthDelta = Math.abs(startMonth - preferredMonth);
+        if (monthDelta === 0) {
+          score += 2;
+          explanationParts.push("подходит по месяцу поездки");
+        } else if (monthDelta === 1) {
+          score += 1;
+          explanationParts.push("месяц поездки близок к желаемому");
+        }
+      }
+
+      return {
+        tour,
+        score,
+        explanation:
+          explanationParts.length > 0
+            ? explanationParts.join(", ")
+            : "подобран как ближайший актуальный вариант из каталога",
+        durationDays,
+      };
+    })
+    .sort((left, right) => {
+      if (right.score !== left.score) {
+        return right.score - left.score;
+      }
+
+      if (left.tour.basePrice !== right.tour.basePrice) {
+        return left.tour.basePrice - right.tour.basePrice;
+      }
+
+      return left.tour.title.localeCompare(right.tour.title, "ru");
+    })
+    .slice(0, 3)
+    .map(({ tour, score, explanation, durationDays }) => ({
+      tourId: tour.id,
+      title: tour.title,
+      country: tour.country,
+      city: tour.city,
+      startDate: tour.startDate,
+      endDate: tour.endDate,
+      durationDays,
+      basePrice: tour.basePrice,
+      score,
+      explanation,
+    }));
+}
+
 function getNavigationReply(
   value: string,
   sessionRole: UserRole | null
@@ -332,13 +438,13 @@ function getNavigationReply(
           : "Для начала можно создать аккаунт или сразу войти, если он уже есть.",
       actions: sessionRole
         ? [
-            { label: "Профиль", to: "/profile" },
-            { label: "Каталог туров", to: "/tours" },
-          ]
+          { label: "Профиль", to: "/profile" },
+          { label: "Каталог туров", to: "/tours" },
+        ]
         : [
-            { label: "Регистрация", to: "/register" },
-            { label: "Вход", to: "/login" },
-          ],
+          { label: "Регистрация", to: "/register" },
+          { label: "Вход", to: "/login" },
+        ],
     };
   }
 
@@ -401,7 +507,7 @@ function getNavigationReply(
       text: "Контакты и способы связи находятся на главной странице. Там же можно перейти к разделу о компании.",
       actions: [
         { label: "Контакты", to: "/#contacts" },
-        { label: "О нас", to: "/#about" },
+        { label: "О нас", to: "/about" },
       ],
     };
   }
@@ -486,6 +592,10 @@ function getPromptText(step: ChatStep, draft: RecommendationDraft): string {
 
 export default function TravelChatWidget() {
   const session = useAuthSession();
+  const [viewport, setViewport] = useState(() => ({
+    width: typeof window !== "undefined" ? window.innerWidth : 1280,
+    height: typeof window !== "undefined" ? window.innerHeight : 900,
+  }));
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -494,21 +604,7 @@ export default function TravelChatWidget() {
   const [catalogTours, setCatalogTours] = useState<Tour[]>([]);
   const [isThinking, setIsThinking] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
-
-  const posRef = useRef({ x: 16, y: window.innerHeight - BEAR_FRAME_H - 16 });
-  const targetRef = useRef<{ x: number; y: number } | null>(null);
-  const behaviorRef = useRef<"idle" | "walking">("idle");
-  const isDraggingRef = useRef(false);
-  const dragOffsetRef = useRef({ x: 0, y: 0 });
-  const wasDragRef = useRef(false);
-  const animIndexRef = useRef(0);
-  const frameTimerRef = useRef(0);
-  const idleTimerRef = useRef(0);
-  const [renderPos, setRenderPos] = useState(() => ({ ...posRef.current }));
-  const [renderFrame, setRenderFrame] = useState(0);
-  const [flipped, setFlipped] = useState(false);
-  const [bearBubble, setBearBubble] = useState<string | null>(null);
-  const bearMsgRef = useRef(0);
+  const isMobile = viewport.width < 640;
 
   const loadCatalogTours = async (): Promise<Tour[]> => {
     try {
@@ -526,6 +622,19 @@ export default function TravelChatWidget() {
   }, []);
 
   useEffect(() => {
+    const updateViewport = () => {
+      setViewport({
+        width: window.innerWidth,
+        height: window.innerHeight,
+      });
+    };
+
+    updateViewport();
+    window.addEventListener("resize", updateViewport);
+    return () => window.removeEventListener("resize", updateViewport);
+  }, []);
+
+  useEffect(() => {
     if (!isOpen || messages.length > 0) {
       return;
     }
@@ -535,20 +644,7 @@ export default function TravelChatWidget() {
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, isThinking, isOpen]);
-
-  useEffect(() => {
-    if (!isOpen) {
-      return;
-    }
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [isOpen]);
+  }, [messages, isThinking]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -580,95 +676,6 @@ export default function TravelChatWidget() {
       window.removeEventListener(TRAVEL_CHAT_OPEN_EVENT, handleOpenRequest as EventListener);
   }, []);
 
-  useEffect(() => {
-    let rafId: number;
-    let prevTime: number | undefined;
-
-    const pickTarget = () => {
-      const pad = 20;
-      targetRef.current = {
-        x: pad + Math.random() * Math.max(0, window.innerWidth - BEAR_FRAME_W - pad * 2),
-        y: pad + Math.random() * Math.max(0, window.innerHeight - BEAR_FRAME_H - pad * 2),
-      };
-      behaviorRef.current = "walking";
-      animIndexRef.current = 0;
-      frameTimerRef.current = 0;
-    };
-
-    const tick = (time: number) => {
-      if (prevTime === undefined) prevTime = time;
-      const dt = Math.min(time - prevTime, 50);
-      prevTime = time;
-
-      if (!isDraggingRef.current) {
-        if (behaviorRef.current === "idle") {
-          idleTimerRef.current += dt;
-          if (idleTimerRef.current > 1500 + Math.random() * 3000) {
-            idleTimerRef.current = 0;
-            pickTarget();
-          }
-        } else if (behaviorRef.current === "walking" && targetRef.current) {
-          const dx = targetRef.current.x - posRef.current.x;
-          const dy = targetRef.current.y - posRef.current.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const step = WALK_SPEED_PX * (dt / 1000);
-
-          if (dist <= step) {
-            posRef.current = { ...targetRef.current };
-            targetRef.current = null;
-            behaviorRef.current = "idle";
-            idleTimerRef.current = 0;
-            animIndexRef.current = 0;
-            setFlipped(false);
-          } else {
-            posRef.current = {
-              x: posRef.current.x + (dx / dist) * step,
-              y: posRef.current.y + (dy / dist) * step,
-            };
-            setFlipped(dx > 0);
-          }
-          setRenderPos({ ...posRef.current });
-        }
-      }
-
-      const frameDuration =
-        behaviorRef.current === "walking" ? FRAME_MS_WALK : FRAME_MS_IDLE;
-      frameTimerRef.current += dt;
-      if (frameTimerRef.current >= frameDuration) {
-        frameTimerRef.current -= frameDuration;
-        const frames =
-          behaviorRef.current === "walking" ? FRAMES_WALK : FRAMES_IDLE;
-        animIndexRef.current = (animIndexRef.current + 1) % frames.length;
-        setRenderFrame(frames[animIndexRef.current]);
-      }
-
-      rafId = requestAnimationFrame(tick);
-    };
-
-    rafId = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(rafId);
-  }, []);
-
-  useEffect(() => {
-    if (isOpen) {
-      setBearBubble(null);
-      return;
-    }
-    let hideId: ReturnType<typeof setTimeout>;
-    const show = () => {
-      setBearBubble(BEAR_MESSAGES[bearMsgRef.current % BEAR_MESSAGES.length]);
-      bearMsgRef.current += 1;
-      hideId = setTimeout(() => setBearBubble(null), 3000);
-    };
-    const initialId = setTimeout(show, 1500);
-    const intervalId = setInterval(show, 7000);
-    return () => {
-      clearTimeout(initialId);
-      clearTimeout(hideId);
-      clearInterval(intervalId);
-    };
-  }, [isOpen]);
-
   const appendMessage = (message: ChatMessage) => {
     setMessages((currentMessages) => [...currentMessages, message]);
   };
@@ -683,7 +690,7 @@ export default function TravelChatWidget() {
     setStep("country");
     setInputValue("");
     setIsThinking(false);
-      setMessages([
+    setMessages([
       createMessage(
         "assistant",
         "Я ваш чат-бот. Помогу подобрать тур, а еще подскажу, где на сайте находятся профиль, бронирования, контакты и рабочие разделы."
@@ -713,8 +720,8 @@ export default function TravelChatWidget() {
       const normalizedCountry = draft.country.trim().toLowerCase();
       const cityPool = normalizedCountry
         ? catalogTours
-            .filter((tour) => tour.country.trim().toLowerCase() === normalizedCountry)
-            .map((tour) => tour.city)
+          .filter((tour) => tour.country.trim().toLowerCase() === normalizedCountry)
+          .map((tour) => tour.city)
         : catalogTours.map((tour) => tour.city);
 
       const cities = getUniqueValues(cityPool, 4);
@@ -790,14 +797,19 @@ export default function TravelChatWidget() {
         recommendations,
         latestCatalogTours
       );
+      const fallbackRecommendations = buildFallbackRecommendations(
+        payload,
+        latestCatalogTours
+      );
 
-      if (visibleRecommendations.length === 0) {
+      const actualRecommendations =
+        visibleRecommendations.length > 0 ? visibleRecommendations : fallbackRecommendations;
+
+      if (actualRecommendations.length === 0) {
         appendMessage(
           createMessage(
             "assistant",
-            recommendations.length > 0
-              ? "Модель вернула устаревшие варианты, которых уже нет в текущем каталоге. Попробуйте другой запрос или дождитесь обновления каталога."
-              : "Пока не нашел точных совпадений. Попробуйте расширить бюджет, убрать город или выбрать другой месяц."
+            "Пока не нашел удачных совпадений. Попробуйте расширить бюджет, убрать город или выбрать другой месяц."
           )
         );
         return;
@@ -806,21 +818,39 @@ export default function TravelChatWidget() {
       appendMessage(
         createMessage(
           "assistant",
-          "Вот что сейчас выглядит наиболее подходящим по вашим пожеланиям.",
+          visibleRecommendations.length > 0
+            ? "Вот что сейчас выглядит наиболее подходящим по вашим пожеланиям."
+            : "Подобрал актуальные варианты напрямую из текущего каталога.",
           "success",
-          visibleRecommendations
+          actualRecommendations
         )
       );
     } catch (error) {
-      appendMessage(
-        createMessage(
-          "assistant",
-          error instanceof Error
-            ? error.message
-            : "Не удалось получить рекомендации прямо сейчас.",
-          "error"
-        )
+      const fallbackRecommendations = buildFallbackRecommendations(
+        payload,
+        catalogTours
       );
+
+      if (fallbackRecommendations.length > 0) {
+        appendMessage(
+          createMessage(
+            "assistant",
+            "Сейчас покажу лучшие актуальные варианты из каталога.",
+            "success",
+            fallbackRecommendations
+          )
+        );
+      } else {
+        appendMessage(
+          createMessage(
+            "assistant",
+            error instanceof Error
+              ? error.message
+              : "Не удалось получить рекомендации прямо сейчас.",
+            "error"
+          )
+        );
+      }
     } finally {
       setIsThinking(false);
     }
@@ -961,295 +991,210 @@ export default function TravelChatWidget() {
     await handleAnswer(inputValue);
   };
 
-  const handleBearMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    isDraggingRef.current = true;
-    wasDragRef.current = false;
-    dragOffsetRef.current = {
-      x: e.clientX - posRef.current.x,
-      y: e.clientY - posRef.current.y,
-    };
-
-    const onMove = (ev: MouseEvent) => {
-      wasDragRef.current = true;
-      posRef.current = {
-        x: Math.max(0, Math.min(window.innerWidth - BEAR_FRAME_W, ev.clientX - dragOffsetRef.current.x)),
-        y: Math.max(0, Math.min(window.innerHeight - BEAR_FRAME_H, ev.clientY - dragOffsetRef.current.y)),
-      };
-      setRenderPos({ ...posRef.current });
-    };
-
-    const onUp = () => {
-      isDraggingRef.current = false;
-      behaviorRef.current = "idle";
-      idleTimerRef.current = 0;
-      window.removeEventListener("mousemove", onMove);
-      window.removeEventListener("mouseup", onUp);
-    };
-
-    window.addEventListener("mousemove", onMove);
-    window.addEventListener("mouseup", onUp);
-  };
-
-  const handleBearTouchStart = (e: React.TouchEvent) => {
-    const touch = e.touches[0];
-    isDraggingRef.current = true;
-    wasDragRef.current = false;
-    dragOffsetRef.current = {
-      x: touch.clientX - posRef.current.x,
-      y: touch.clientY - posRef.current.y,
-    };
-
-    const onMove = (ev: TouchEvent) => {
-      ev.preventDefault();
-      wasDragRef.current = true;
-      const t = ev.touches[0];
-      posRef.current = {
-        x: Math.max(0, Math.min(window.innerWidth - BEAR_FRAME_W, t.clientX - dragOffsetRef.current.x)),
-        y: Math.max(0, Math.min(window.innerHeight - BEAR_FRAME_H, t.clientY - dragOffsetRef.current.y)),
-      };
-      setRenderPos({ ...posRef.current });
-    };
-
-    const onEnd = () => {
-      isDraggingRef.current = false;
-      behaviorRef.current = "idle";
-      idleTimerRef.current = 0;
-      window.removeEventListener("touchmove", onMove);
-      window.removeEventListener("touchend", onEnd);
-    };
-
-    window.addEventListener("touchmove", onMove, { passive: false });
-    window.addEventListener("touchend", onEnd);
-  };
-
   const hasResults = messages.some(
     (message) => Array.isArray(message.recommendations) && message.recommendations.length > 0
   );
+  const hasMessages = messages.length > 0;
 
   return (
     <>
-      <div
-        className="z-30 flex flex-col items-start"
-        style={{ position: "fixed", left: renderPos.x, top: renderPos.y, width: BEAR_FRAME_W }}
-      >
-        {bearBubble ? (
-          <div
-            className="mb-1 max-w-[160px] px-2 py-1 text-center text-xs font-bold text-blue-700 shadow-sm"
-            style={{ background: "#a8d0ff", borderRadius: "12px 8px 0 8px", lineHeight: 1.4 }}
-          >
-            {bearBubble}
-          </div>
-        ) : null}
-        <button
-          type="button"
-          onMouseDown={handleBearMouseDown}
-          onTouchStart={handleBearTouchStart}
-          onClick={() => { if (!wasDragRef.current) setIsOpen(true); }}
-          aria-label="Открыть чат-бота"
-          className="block cursor-grab active:cursor-grabbing touch-none select-none"
-          style={{ width: BEAR_FRAME_W, height: BEAR_FRAME_H }}
-        >
-          <span
-            aria-hidden="true"
-            className="block"
-            style={{
-              width: BEAR_FRAME_W,
-              height: BEAR_FRAME_H,
-              backgroundImage: `url(${bearSprite})`,
-              backgroundSize: `${BEAR_FRAME_W * BEAR_COLS}px ${BEAR_FRAME_H * BEAR_ROWS}px`,
-              backgroundPosition: `${-(renderFrame % BEAR_COLS) * BEAR_FRAME_W}px ${-Math.floor(renderFrame / BEAR_COLS) * BEAR_FRAME_H}px`,
-              backgroundRepeat: "no-repeat",
-              transform: flipped ? "scaleX(-1)" : undefined,
-            }}
-          />
-        </button>
-      </div>
-
       {isOpen ? (
         <div
-          className="fixed inset-0 z-50 bg-slate-950/35 backdrop-blur-[2px]"
-          onClick={() => setIsOpen(false)}
+          className={`fixed z-50 flex flex-col overflow-hidden rounded-[30px] border border-[#e8d6bb] bg-[#fffaf2] shadow-[0_28px_90px_rgba(45,23,12,0.22)] ${isMobile
+              ? "inset-x-3 bottom-2 top-9"
+              : "bottom-6 left-6 w-[380px] max-w-[calc(100vw-48px)]"
+            }`}
+          style={
+            isMobile
+              ? undefined
+              : { height: `min(${DESKTOP_CHAT_HEIGHT}px, calc(100vh - 32px))` }
+          }
         >
-          <div
-            className="absolute inset-x-4 bottom-4 max-h-[calc(100vh-2rem)] overflow-hidden rounded-[32px] border border-white/60 bg-white shadow-[0_28px_90px_rgba(15,23,42,0.3)] sm:inset-x-auto sm:bottom-6 sm:left-6 sm:w-[420px]"
-            onClick={(event) => event.stopPropagation()}
-          >
-            <div className="bg-[linear-gradient(135deg,#0f172a_0%,#0f766e_48%,#f59e0b_100%)] px-5 py-5 text-white">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-white/80">
-                    <Bot size={14} />
-                    ИИ помощник
-                  </div>
-                  <h2 className="mt-3 text-2xl font-semibold">Подбор тура в формате чата</h2>
-                  <p className="mt-2 text-sm text-white/80">
-                    Бот задаст несколько коротких вопросов и подберет варианты через текущую модель рекомендаций.
-                  </p>
+          <div className="bg-[linear-gradient(135deg,#5b3a29_0%,#8b5a3c_45%,#e38a1f_100%)] px-4 py-3 text-white sm:px-5 sm:py-4">
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em] text-white/85 sm:text-[11px] sm:tracking-[0.18em]">
+                  <Bot size={14} />
+                  ИИ помощник
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(false)}
-                  className="flex h-10 w-10 items-center justify-center rounded-full bg-white/12 text-white transition hover:bg-white/20"
-                  aria-label="Закрыть окно"
-                >
-                  <X size={18} />
-                </button>
+                <h2 className="mt-2.5 text-[1.2rem] font-semibold leading-tight sm:mt-3 sm:text-[1.75rem]">
+                  Подбор тура в формате чата
+                </h2>
+                <p className="mt-1.5 max-w-[15rem] text-[13px] leading-5 text-white/80 sm:mt-2 sm:max-w-[18rem] sm:text-sm sm:leading-6">
+                  Помогу найти тур и быстро подскажу нужные разделы сайта.
+                </p>
               </div>
+
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-white/12 text-white transition hover:bg-white/20 sm:h-10 sm:w-10"
+                aria-label="Закрыть окно"
+              >
+                <X size={18} />
+              </button>
             </div>
+          </div>
 
-            <div className="flex h-[min(68vh,640px)] flex-col">
-              <div className="flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,#f8fafc_0%,#eefbf9_100%)] px-4 py-4 sm:px-5">
-                {messages.map((message) => {
-                  const isAssistant = message.role === "assistant";
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex-1 space-y-4 overflow-y-auto bg-[linear-gradient(180deg,#fffaf2_0%,#fff4e6_100%)] px-3 py-3 sm:px-5 sm:py-4">
+              {messages.map((message) => {
+                const isAssistant = message.role === "assistant";
 
-                  return (
+                return (
+                  <div
+                    key={message.id}
+                    className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
+                  >
                     <div
-                      key={message.id}
-                      className={`flex ${isAssistant ? "justify-start" : "justify-end"}`}
-                    >
-                      <div
-                        className={`max-w-[88%] rounded-[24px] px-4 py-3 shadow-sm ${
-                          isAssistant
-                            ? message.tone === "error"
-                              ? "border border-red-200 bg-red-50 text-red-700"
-                              : message.tone === "success"
-                                ? "border border-emerald-200 bg-white text-slate-800"
-                                : "border border-slate-200 bg-white text-slate-800"
-                            : "bg-slate-900 text-white"
+                      className={`max-w-[90%] rounded-[24px] px-4 py-3 shadow-sm ${isAssistant
+                          ? message.tone === "error"
+                            ? "border border-red-200 bg-[#fff2f2] text-red-700"
+                            : message.tone === "success"
+                              ? "border border-emerald-200 bg-[#f7fff8] text-slate-800"
+                              : "border border-[#eddcc0] bg-[#fffdf8] text-slate-800"
+                          : "bg-[#5b3a29] text-white"
                         }`}
-                      >
-                        <p className="whitespace-pre-line text-sm leading-6">{message.text}</p>
+                    >
+                      <p className="whitespace-pre-line text-sm leading-6">{message.text}</p>
 
-                        {message.recommendations?.length ? (
-                          <div className="mt-4 space-y-3">
-                            {message.recommendations.map((recommendation) => (
-                              <div
-                                key={recommendation.tourId}
-                                className="rounded-[22px] border border-slate-200 bg-slate-50 px-4 py-4"
-                              >
-                                <div className="flex flex-wrap items-start justify-between gap-3">
-                                  <div className="min-w-0">
-                                    <h3 className="text-base font-semibold text-slate-900">
-                                      {recommendation.title}
-                                    </h3>
-                                    <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1">
-                                        <MapPin size={12} />
-                                        {recommendation.city}, {recommendation.country}
-                                      </span>
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1">
-                                        <CalendarDays size={12} />
-                                        {formatDateRange(recommendation.startDate, recommendation.endDate)}
-                                      </span>
-                                      <span className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-1">
-                                        <Wallet size={12} />
-                                        от {formatPrice(recommendation.basePrice)} ₽
-                                      </span>
-                                    </div>
+                      {message.recommendations?.length ? (
+                        <div className="mt-4 space-y-3">
+                          {message.recommendations.map((recommendation) => (
+                            <div
+                              key={recommendation.tourId}
+                              className="rounded-[22px] border border-[#ecdac0] bg-white px-4 py-4"
+                            >
+                              <div className="flex flex-wrap items-start justify-between gap-3">
+                                <div className="min-w-0">
+                                  <h3 className="text-base font-semibold text-slate-900">
+                                    {recommendation.title}
+                                  </h3>
+                                  <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#fff5e8] px-3 py-1">
+                                      <MapPin size={12} />
+                                      {recommendation.city}, {recommendation.country}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#fff5e8] px-3 py-1">
+                                      <CalendarDays size={12} />
+                                      {formatDateRange(recommendation.startDate, recommendation.endDate)}
+                                    </span>
+                                    <span className="inline-flex items-center gap-1 rounded-full bg-[#fff5e8] px-3 py-1">
+                                      <Wallet size={12} />
+                                      от {formatPrice(recommendation.basePrice)} ₽
+                                    </span>
                                   </div>
-
-                                  <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
-                                    {recommendation.durationDays} дн.
-                                  </span>
                                 </div>
 
-                                <p className="mt-3 text-sm leading-6 text-slate-600">
-                                  {recommendation.explanation}
-                                </p>
+                                <span className="rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700">
+                                  {recommendation.durationDays} дн.
+                                </span>
                               </div>
-                            ))}
-                          </div>
-                        ) : null}
 
-                        {message.actions?.length ? (
-                          <div className="mt-4 flex flex-wrap gap-2">
-                            {message.actions.map((action) => (
-                              <Link
-                                key={`${message.id}-${action.to}-${action.label}`}
-                                to={action.to}
-                                onClick={() => setIsOpen(false)}
-                                className="rounded-full bg-slate-900 px-4 py-2 text-sm font-medium text-white transition hover:bg-slate-800"
-                              >
-                                {action.label}
-                              </Link>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
-                    </div>
-                  );
-                })}
+                              <p className="mt-3 text-sm leading-6 text-slate-600">
+                                {recommendation.explanation}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : null}
 
-                {isThinking ? (
-                  <div className="flex justify-start">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm text-slate-600 shadow-sm">
-                      <LoaderCircle size={16} className="animate-spin" />
-                      Думаю над лучшими вариантами...
+                      {message.actions?.length ? (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {message.actions.map((action) => (
+                            <Link
+                              key={`${message.id}-${action.to}-${action.label}`}
+                              to={action.to}
+                              onClick={() => setIsOpen(false)}
+                              className="rounded-full bg-[#5b3a29] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#6a4431]"
+                            >
+                              {action.label}
+                            </Link>
+                          ))}
+                        </div>
+                      ) : null}
                     </div>
                   </div>
-                ) : null}
+                );
+              })}
 
-                <div ref={messagesEndRef} />
-              </div>
+              {isThinking ? (
+                <div className="flex justify-start">
+                  <div className="inline-flex items-center gap-2 rounded-full border border-[#ead9bf] bg-white px-4 py-2 text-sm text-slate-600 shadow-sm">
+                    <LoaderCircle size={16} className="animate-spin" />
+                    Подбираю лучший маршрут...
+                  </div>
+                </div>
+              ) : null}
 
-              {quickReplies.length > 0 ? (
-                <div className="border-t border-slate-200 bg-white px-4 py-3 sm:px-5">
-                  <div className="flex flex-wrap gap-2">
+              {!hasMessages ? (
+                <div className="rounded-[24px] border border-dashed border-[#ead7bc] bg-white/60 px-4 py-6 text-center text-sm text-slate-500">
+                  Напишите вопрос, и я помогу с подбором тура.
+                </div>
+              ) : null}
+
+              <div ref={messagesEndRef} />
+            </div>
+
+            {quickReplies.length > 0 ? (
+              <div className="border-t border-[#ead9bf] bg-[#fff8ee] px-3 py-2.5 sm:px-5 sm:py-3">
+                <div className="-mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+                  <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
                     {quickReplies.map((reply) => (
                       <button
                         key={`${step}-${reply.label}-${reply.value}`}
                         type="button"
                         onClick={() => void handleAnswer(reply.value)}
-                        className="rounded-full border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+                        className="rounded-full border border-[#ead7bc] bg-white px-3 py-2 text-sm font-medium text-[#6a4b36] transition hover:border-[#ddb887] hover:bg-[#fff5e7]"
                       >
                         {reply.label}
                       </button>
                     ))}
                   </div>
                 </div>
-              ) : null}
+              </div>
+            ) : null}
 
-              <div className="border-t border-slate-200 bg-white px-4 py-4 sm:px-5">
-                <form onSubmit={handleSubmit} className="flex items-end gap-3">
-                  <div className="flex-1">
-                    <label htmlFor="travel-chat-input" className="sr-only">
-                      Сообщение для чат-бота
-                    </label>
-                    <textarea
-                      id="travel-chat-input"
-                      rows={1}
-                      value={inputValue}
-                      onChange={(event) => setInputValue(event.target.value)}
-                      placeholder={inputPlaceholder}
-                      disabled={isThinking}
-                      className="min-h-[52px] w-full resize-none rounded-[20px] border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-400 disabled:cursor-not-allowed disabled:bg-slate-100"
-                    />
-                  </div>
+            <div className="border-t border-[#ead9bf] bg-[#fffaf2] px-3 py-2.5 sm:px-5 sm:py-4">
+              <form onSubmit={handleSubmit} className="flex items-end gap-3">
+                <div className="flex-1">
+                  <label htmlFor="travel-chat-input" className="sr-only">
+                    Сообщение для чат-бота
+                  </label>
+                  <textarea
+                    id="travel-chat-input"
+                    rows={1}
+                    value={inputValue}
+                    onChange={(event) => setInputValue(event.target.value)}
+                    placeholder={inputPlaceholder}
+                    disabled={isThinking}
+                    className="min-h-[46px] w-full resize-none overflow-hidden rounded-[18px] border border-[#ead7bc] bg-white px-4 py-3 text-sm leading-5 text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#e38a1f] disabled:cursor-not-allowed disabled:bg-slate-100 sm:min-h-[52px] sm:rounded-[20px]"
+                  />
+                </div>
 
-                  <button
-                    type="submit"
-                    disabled={isThinking || inputValue.trim().length === 0}
-                    className="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg transition hover:bg-emerald-600 disabled:cursor-not-allowed disabled:bg-emerald-300"
-                    aria-label="Отправить сообщение"
-                  >
-                    <Send size={18} />
-                  </button>
-                </form>
+                <button
+                  type="submit"
+                  disabled={isThinking || inputValue.trim().length === 0}
+                  className="flex h-[46px] w-[46px] items-center justify-center rounded-full bg-[#e38a1f] text-white shadow-lg transition hover:bg-[#d7790f] disabled:cursor-not-allowed disabled:bg-[#f2c788] sm:h-[52px] sm:w-[52px]"
+                  aria-label="Отправить сообщение"
+                >
+                  <Send size={18} />
+                </button>
+              </form>
 
-                <div className="mt-3 flex flex-wrap gap-2">
+              <div className="mt-3 -mx-3 overflow-x-auto px-3 sm:mx-0 sm:px-0">
+                <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
                   <button
                     type="button"
                     onClick={startConversation}
-                    className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                    className="rounded-full bg-[#f7ead5] px-4 py-2 text-sm font-medium text-[#6a4b36] transition hover:bg-[#f1ddbe]"
                   >
                     Подобрать заново
                   </button>
                   <Link
                     to="/tours"
                     onClick={() => setIsOpen(false)}
-                    className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                    className="rounded-full bg-[#f7ead5] px-4 py-2 text-sm font-medium text-[#6a4b36] transition hover:bg-[#f1ddbe]"
                   >
                     Каталог
                   </Link>
@@ -1257,7 +1202,7 @@ export default function TravelChatWidget() {
                     <Link
                       to="/bookings"
                       onClick={() => setIsOpen(false)}
-                      className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                      className="rounded-full bg-[#f7ead5] px-4 py-2 text-sm font-medium text-[#6a4b36] transition hover:bg-[#f1ddbe]"
                     >
                       Мои бронирования
                     </Link>
@@ -1266,7 +1211,7 @@ export default function TravelChatWidget() {
                     <Link
                       to="/admin"
                       onClick={() => setIsOpen(false)}
-                      className="rounded-full bg-slate-100 px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-200"
+                      className="rounded-full bg-[#f7ead5] px-4 py-2 text-sm font-medium text-[#6a4b36] transition hover:bg-[#f1ddbe]"
                     >
                       Панель
                     </Link>
@@ -1275,24 +1220,45 @@ export default function TravelChatWidget() {
                     <Link
                       to="/tours"
                       onClick={() => setIsOpen(false)}
-                      className="rounded-full bg-amber-100 px-4 py-2 text-sm font-medium text-amber-800 transition hover:bg-amber-200"
+                      className="rounded-full bg-[#ffe5b1] px-4 py-2 text-sm font-medium text-[#915000] transition hover:bg-[#ffd88b]"
                     >
                       Открыть каталог туров
                     </Link>
                   ) : null}
                 </div>
+              </div>
 
-                <div className="mt-3 text-xs leading-5 text-slate-400">
-                  {draft.country ? `Страна: ${draft.country}. ` : ""}
-                  {draft.city ? `Город: ${draft.city}. ` : ""}
-                  {draft.budget ? `Бюджет: до ${formatPrice(parsePositiveNumber(draft.budget) ?? 0)} ₽. ` : ""}
-                  {draft.desiredDurationDays ? `Длительность: ${draft.desiredDurationDays} дн. ` : ""}
-                  {draft.preferredMonth ? `Месяц: ${formatMonthLabel(draft.preferredMonth)}.` : ""}
-                </div>
+              <div className="mt-2.5 text-xs leading-5 text-slate-400">
+                {draft.country ? `Страна: ${draft.country}. ` : ""}
+                {draft.city ? `Город: ${draft.city}. ` : ""}
+                {draft.budget
+                  ? `Бюджет: до ${formatPrice(parsePositiveNumber(draft.budget) ?? 0)} ₽. `
+                  : ""}
+                {draft.desiredDurationDays ? `Длительность: ${draft.desiredDurationDays} дн. ` : ""}
+                {draft.preferredMonth ? `Месяц: ${formatMonthLabel(draft.preferredMonth)}.` : ""}
               </div>
             </div>
           </div>
         </div>
+      ) : null}
+
+      {!isOpen ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          aria-label="Открыть чат"
+          className={`group fixed z-[60] flex items-center justify-center rounded-full bg-amber-500 text-white shadow-lg transition-all duration-300 hover:scale-110 hover:bg-amber-600 active:bg-amber-700 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-amber-300 focus-visible:ring-offset-2 ${
+            isMobile ? "bottom-6 left-4 h-12 w-12" : "bottom-6 left-6 h-12 w-12"
+          }`}
+        >
+          <MessageCircle size={24} />
+
+          {!isMobile ? (
+            <span className="pointer-events-none absolute left-[calc(100%+12px)] top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-full border border-[#ead7bc] bg-white px-4 py-2 text-sm font-semibold text-[#6a4b36] opacity-0 shadow-[0_14px_35px_rgba(45,23,12,0.12)] transition-all duration-300 group-hover:translate-x-1 group-hover:opacity-100 md:inline-flex">
+              ИИ помощник
+            </span>
+          ) : null}
+        </button>
       ) : null}
     </>
   );

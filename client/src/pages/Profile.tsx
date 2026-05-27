@@ -10,6 +10,8 @@ import ScrollToTop from "../components/ScrollToTop";
 import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizePassportInput,
   sanitizePhoneInput,
 } from "../lib/formSanitizers";
@@ -18,6 +20,28 @@ type ProfileLocationState = {
   registrationSuccess?: boolean;
   profileSetupRequired?: boolean;
 };
+
+function getClientStatusMeta(isRegular: boolean): {
+  label: string;
+  badgeClassName: string;
+  description: string;
+} {
+  if (isRegular) {
+    return {
+      label: "Постоянный клиент",
+      badgeClassName: "bg-emerald-100 text-emerald-700 ring-1 ring-emerald-200",
+      description:
+        "Для постоянных клиентов действует скидка 10% на все туры. Этот статус назначается сотрудником сервиса.",
+    };
+  }
+
+  return {
+    label: "Новый клиент",
+    badgeClassName: "bg-slate-100 text-slate-700 ring-1 ring-slate-200",
+    description:
+      "После первых поездок и сопровождения менеджер может перевести вас в статус постоянного клиента.",
+  };
+}
 
 export default function Profile() {
   const location = useLocation();
@@ -142,6 +166,24 @@ export default function Profile() {
           ) : (
             <div className="grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
               <div className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm">
+                {(() => {
+                  const clientStatus = getClientStatusMeta(profile.isRegular);
+
+                  return (
+                    <div className="mb-6 rounded-[24px] border border-slate-200 bg-slate-50 px-5 py-4">
+                      <div className="text-sm text-slate-500">Статус клиента</div>
+                      <div
+                        className={`mt-3 inline-flex rounded-full px-3 py-1 text-sm font-semibold ${clientStatus.badgeClassName}`}
+                      >
+                        {clientStatus.label}
+                      </div>
+                      <p className="mt-3 text-sm leading-6 text-slate-600">
+                        {clientStatus.description}
+                      </p>
+                    </div>
+                  );
+                })()}
+
                 <h2 className="text-2xl font-bold text-slate-900">Основная информация</h2>
                 <div className="mt-6 space-y-5">
                   <div>
@@ -172,10 +214,11 @@ export default function Profile() {
 
               <form
                 onSubmit={handleSubmit}
-                className="rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm"
+                className="flex h-full min-h-[420px] flex-col rounded-[28px] border border-slate-200 bg-white p-8 shadow-sm"
               >
                 <h2 className="text-2xl font-bold text-slate-900">Данные для бронирования</h2>
-                <div className="mt-6 space-y-5">
+                <div className="mt-6 flex flex-1 flex-col">
+                  <div className="space-y-5">
                   <div>
                     <label className="text-sm text-slate-500">Телефон</label>
                     <input
@@ -185,8 +228,10 @@ export default function Profile() {
                       placeholder="+7 (999) 123-45-67"
                       className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                       required
-                      minLength={6}
+                      minLength={FIELD_LIMITS.phone}
                       maxLength={FIELD_LIMITS.phone}
+                      pattern={FIELD_PATTERNS.phone}
+                      title={FIELD_TITLES.phone}
                       inputMode="tel"
                       autoComplete="tel"
                     />
@@ -203,16 +248,19 @@ export default function Profile() {
                       placeholder="1234 567890"
                       className="mt-1 w-full rounded-xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400"
                       required
-                      minLength={5}
+                      minLength={FIELD_LIMITS.passport}
                       maxLength={FIELD_LIMITS.passport}
+                      pattern={FIELD_PATTERNS.passport}
+                      title={FIELD_TITLES.passport}
                       autoComplete="off"
                     />
+                  </div>
                   </div>
 
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="w-full rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
+                    className="mt-auto w-full rounded-full bg-indigo-600 px-6 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-indigo-400"
                   >
                     {isSaving ? "Сохраняем..." : "Сохранить профиль"}
                   </button>

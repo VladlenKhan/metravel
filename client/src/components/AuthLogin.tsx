@@ -8,7 +8,13 @@ import {
   login,
   saveAuthSession,
 } from "../api/api";
-import { FIELD_LIMITS, sanitizeEmailInput } from "../lib/formSanitizers";
+import {
+  FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
+  sanitizeEmailInput,
+  sanitizePasswordInput,
+} from "../lib/formSanitizers";
 
 type LoginLocationState = {
   registrationSuccess?: boolean;
@@ -103,8 +109,11 @@ export default function AuthLogin() {
               className="mt-1 w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
               maxLength={FIELD_LIMITS.email}
+              pattern={FIELD_PATTERNS.email}
+              title={FIELD_TITLES.email}
               inputMode="email"
               autoComplete="email"
+              spellCheck={false}
             />
           </div>
 
@@ -114,13 +123,16 @@ export default function AuthLogin() {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => setPassword(sanitizePasswordInput(event.target.value))}
                 placeholder="••••••••"
                 className="w-full rounded-xl border px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 required
                 minLength={6}
                 maxLength={FIELD_LIMITS.password}
+                pattern={FIELD_PATTERNS.password}
+                title={FIELD_TITLES.password}
                 autoComplete="current-password"
+                spellCheck={false}
               />
               <button
                 type="button"

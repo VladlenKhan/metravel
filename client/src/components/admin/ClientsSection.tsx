@@ -11,6 +11,8 @@ import {
 } from "../../api/api";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizeEmailInput,
   sanitizePassportInput,
   sanitizePersonNameInput,
@@ -89,7 +91,15 @@ function getRoleMeta(role: UserRole): { label: string; badgeClassName: string } 
   }
 }
 
-export default function ClientsSection() {
+type ClientsSectionProps = {
+  onClientsChanged?: () => void | Promise<void>;
+  linkedUserRolesByClientId?: Map<string, UserRole>;
+};
+
+export default function ClientsSection({
+  onClientsChanged,
+  linkedUserRolesByClientId,
+}: ClientsSectionProps) {
   const session = useAuthSession();
   const [clients, setClients] = useState<ClientProfile[]>([]);
   const [form, setForm] = useState<ClientFormState>(createInitialClientForm);
@@ -99,9 +109,20 @@ export default function ClientsSection() {
   const [feedback, setFeedback] = useState<Feedback>(null);
   const [error, setError] = useState("");
   const currentSessionEmail = session?.email.trim().toLowerCase() ?? "";
+  const visibleClients = clients.filter((client) => {
+    const normalizedClientEmail = client.email.trim().toLowerCase();
+    const linkedRole = linkedUserRolesByClientId?.get(client.id.trim().toLowerCase()) ?? null;
+
+    if (normalizedClientEmail === currentSessionEmail && session?.role !== "Client") {
+      return false;
+    }
+
+    return linkedRole === null || linkedRole === "Client";
+  });
   const currentSessionClientCard =
-    clients.find((client) => client.email.trim().toLowerCase() === currentSessionEmail) ?? null;
-  const otherClients = clients.filter(
+    visibleClients.find((client) => client.email.trim().toLowerCase() === currentSessionEmail) ??
+    null;
+  const otherClients = visibleClients.filter(
     (client) => client.email.trim().toLowerCase() !== currentSessionEmail
   );
   const shouldScrollClients = otherClients.length > 3;
@@ -113,6 +134,7 @@ export default function ClientsSection() {
     try {
       const nextClients = await fetchClients();
       setClients(sortClients(nextClients));
+      void onClientsChanged?.();
     } catch (loadError) {
       setError(
         loadError instanceof Error ? loadError.message : "Не удалось загрузить карточки клиентов."
@@ -136,18 +158,24 @@ export default function ClientsSection() {
     try {
       if (form.id) {
         const updatedClient = await updateClient(form.id, toClientProfile(form));
-        setClients((currentClients) =>
-          sortClients(
+        setClients((currentClients) => {
+          const nextClients = sortClients(
             currentClients.map((client) => (client.id === updatedClient.id ? updatedClient : client))
-          )
-        );
+          );
+          void onClientsChanged?.();
+          return nextClients;
+        });
         setFeedback({
           type: "success",
           message: "Карточка клиента обновлена.",
         });
       } else {
         const createdClient = await createClient(toPayload(form));
-        setClients((currentClients) => sortClients([createdClient, ...currentClients]));
+        setClients((currentClients) => {
+          const nextClients = sortClients([createdClient, ...currentClients]);
+          void onClientsChanged?.();
+          return nextClients;
+        });
         setFeedback({
           type: "success",
           message: "Новый клиент добавлен.",
@@ -185,9 +213,13 @@ export default function ClientsSection() {
 
     try {
       await deleteClient(client.id);
-      setClients((currentClients) =>
-        sortClients(currentClients.filter((currentClient) => currentClient.id !== client.id))
-      );
+      setClients((currentClients) => {
+        const nextClients = sortClients(
+          currentClients.filter((currentClient) => currentClient.id !== client.id)
+        );
+        void onClientsChanged?.();
+        return nextClients;
+      });
 
       if (form.id === client.id) {
         resetForm();
@@ -247,6 +279,8 @@ export default function ClientsSection() {
               required
               minLength={2}
               maxLength={FIELD_LIMITS.fullName}
+              pattern={FIELD_PATTERNS.personName}
+              title={FIELD_TITLES.personName}
               autoComplete="name"
             />
           </div>
@@ -267,8 +301,11 @@ export default function ClientsSection() {
                 placeholder="client@example.com"
                 required
                 maxLength={FIELD_LIMITS.email}
+                pattern={FIELD_PATTERNS.email}
+                title={FIELD_TITLES.email}
                 inputMode="email"
                 autoComplete="email"
+                spellCheck={false}
               />
             </div>
 
@@ -284,10 +321,12 @@ export default function ClientsSection() {
                   }))
                 }
                 className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                placeholder="+7 999 123-45-67"
+                placeholder="+7 (999) 123-45-67"
                 required
-                minLength={6}
+                minLength={FIELD_LIMITS.phone}
                 maxLength={FIELD_LIMITS.phone}
+                pattern={FIELD_PATTERNS.phone}
+                title={FIELD_TITLES.phone}
                 inputMode="tel"
                 autoComplete="tel"
               />
@@ -308,8 +347,10 @@ export default function ClientsSection() {
               className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-400"
               placeholder="1234 567890"
               required
-              minLength={5}
+              minLength={FIELD_LIMITS.passport}
               maxLength={FIELD_LIMITS.passport}
+              pattern={FIELD_PATTERNS.passport}
+              title={FIELD_TITLES.passport}
               autoComplete="off"
             />
           </div>

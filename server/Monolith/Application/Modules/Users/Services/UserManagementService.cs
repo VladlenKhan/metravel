@@ -108,6 +108,34 @@ public class UserManagementService : IUserManagementService
         return MapToDto(updated);
     }
 
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var user = await _userRepository.GetByIdAsync(id, cancellationToken);
+        if (user is null)
+        {
+            await WriteNotFoundAuditAsync("Delete", id, cancellationToken);
+            return false;
+        }
+
+        var deleted = await _userRepository.DeleteAsync(id, cancellationToken);
+        if (!deleted)
+        {
+            return false;
+        }
+
+        _logger.LogInformation("User deleted. Id={UserId}, Email={Email}", user.Id, user.Email);
+
+        await _auditService.WriteAsync(
+            action: "Delete",
+            entityType: "User",
+            entityId: user.Id.ToString(),
+            success: true,
+            details: $"User deleted: {user.Email}",
+            cancellationToken: cancellationToken);
+
+        return true;
+    }
+
     private async Task WriteNotFoundAuditAsync(string action, Guid userId, CancellationToken cancellationToken)
     {
         _logger.LogWarning("User not found during {Action}. Id={UserId}", action, userId);
