@@ -9,29 +9,42 @@ import { useFavoriteTours } from "../hooks/useFavoriteTours";
 import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
 import { useTourBooking } from "../hooks/useTourBooking";
 import { useTours } from "../hooks/useTours";
+import { getEffectiveTourPrice } from "../lib/pricing";
 
 export default function Tours() {
   const session = useAuthSession();
   const { tours, loading, error } = useTours();
   const { isFavorite, toggleFavorite, isAvailable: favoritesAvailable } = useFavoriteTours();
   const {
+    profile,
     loading: profileLoading,
     error: profileError,
     isComplete: profileComplete,
   } = useClientProfileStatus();
+  const isRegularClient = Boolean(profile?.isRegular);
   const [filters, setFilters] = useState<TourFilterValues>({
     search: "",
     minPrice: 0,
     maxPrice: Infinity,
   });
-  const { bookingTourId, bookingFeedback, handleBooking, getTourBookingLockLabel } =
-    useTourBooking();
+  const {
+    bookingTourId,
+    bookingFeedback,
+    unavailableBookingTourIds,
+    handleBooking,
+    getTourBookingLockLabel,
+  } =
+    useTourBooking(isRegularClient);
+  const visibleTours =
+    session?.role === "Client"
+      ? tours.filter((tour) => !unavailableBookingTourIds.has(tour.id))
+      : tours;
 
   const deferredSearch = useDeferredValue(filters.search);
   const normalizedSearch = deferredSearch.trim().toLowerCase();
 
   const filteredTours = useMemo(() => {
-    return tours.filter((tour) => {
+    return visibleTours.filter((tour) => {
       const searchableText = [
         tour.title,
         tour.country,
@@ -42,11 +55,13 @@ export default function Tours() {
         .toLowerCase();
 
       const matchesSearch = !normalizedSearch || searchableText.includes(normalizedSearch);
-      const matchesPrice = tour.basePrice >= filters.minPrice && tour.basePrice <= filters.maxPrice;
+      const effectivePrice = getEffectiveTourPrice(tour.basePrice, isRegularClient);
+      const matchesPrice =
+        effectivePrice >= filters.minPrice && effectivePrice <= filters.maxPrice;
 
       return matchesSearch && matchesPrice;
     });
-  }, [tours, normalizedSearch, filters.minPrice, filters.maxPrice]);
+  }, [visibleTours, normalizedSearch, filters.minPrice, filters.maxPrice, isRegularClient]);
 
   return (
     <>
@@ -113,6 +128,7 @@ export default function Tours() {
                   key={tour.id}
                   tour={tour}
                   index={index}
+                  isRegularClient={isRegularClient}
                   footer={
                     <TourCardActions
                       tour={tour}

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchTours } from "../api/api";
 import { useAuthSession } from "./useAuthSession";
+import { useFrontOfficeStore } from "./useFrontOfficeStore";
 import {
   getFavoriteTourIds,
   pruneFavoriteTourIds,
@@ -12,9 +13,31 @@ export function useFavoriteTours() {
   const session = useAuthSession();
   const isAvailable = session?.role === "Client";
   const userEmail = isAvailable ? session.email : null;
+  const { bookings } = useFrontOfficeStore();
   const [favoriteTourIds, setFavoriteTourIds] = useState<string[]>(() =>
     getFavoriteTourIds(userEmail)
   );
+
+  const unavailableTourIdSet = useMemo(() => {
+    const normalizedEmail = userEmail?.trim().toLowerCase() ?? "";
+    const unavailableTourIds = new Set<string>();
+
+    if (!normalizedEmail) {
+      return unavailableTourIds;
+    }
+
+    bookings
+      .filter(
+        (booking) =>
+          booking.status !== "Cancelled" &&
+          booking.clientEmail.trim().toLowerCase() === normalizedEmail
+      )
+      .forEach((booking) => {
+        unavailableTourIds.add(booking.tourId);
+      });
+
+    return unavailableTourIds;
+  }, [bookings, userEmail]);
 
   useEffect(() => {
     setFavoriteTourIds(getFavoriteTourIds(userEmail));
@@ -38,9 +61,12 @@ export function useFavoriteTours() {
           return;
         }
 
+        const visibleTourIds = tours
+          .map((tour) => tour.id)
+          .filter((tourId) => !unavailableTourIdSet.has(tourId));
         const validFavoriteIds = pruneFavoriteTourIds(
           userEmail,
-          tours.map((tour) => tour.id)
+          visibleTourIds
         );
         setFavoriteTourIds(validFavoriteIds);
       })
@@ -53,7 +79,7 @@ export function useFavoriteTours() {
     return () => {
       isCancelled = true;
     };
-  }, [userEmail]);
+  }, [userEmail, unavailableTourIdSet]);
 
   return {
     favoriteTourIds,

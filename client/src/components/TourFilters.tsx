@@ -1,6 +1,8 @@
 import { Search, X } from "lucide-react";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizeIntegerInput,
   sanitizeShortTextInput,
 } from "../lib/formSanitizers";
@@ -49,6 +51,8 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
                 focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
               "
               maxLength={FIELD_LIMITS.search}
+              pattern={FIELD_PATTERNS.text}
+              title={FIELD_TITLES.text}
             />
             <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
           </div>
@@ -60,9 +64,7 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
             Цена от (₽)
           </label>
           <input
-            type="number"
-            min={0}
-            max={FIELD_LIMITS.price}
+            type="text"
             value={filters.minPrice > 0 ? String(filters.minPrice) : ""}
             onChange={(event) =>
               updateFilters({
@@ -81,8 +83,10 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
               w-full rounded-lg border border-gray-300 px-4 py-3
               focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
             "
+            maxLength={String(FIELD_LIMITS.price).length}
+            pattern={FIELD_PATTERNS.digits}
+            title={FIELD_TITLES.digits}
             inputMode="numeric"
-            step="1"
           />
         </div>
 
@@ -92,9 +96,7 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
             Цена до (₽)
           </label>
           <input
-            type="number"
-            min={0}
-            max={FIELD_LIMITS.price}
+            type="text"
             value={Number.isFinite(filters.maxPrice) ? String(filters.maxPrice) : ""}
             onChange={(event) =>
               updateFilters({
@@ -113,8 +115,10 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
               w-full rounded-lg border border-gray-300 px-4 py-3
               focus:border-amber-500 focus:ring-2 focus:ring-amber-200 focus:outline-none
             "
+            maxLength={String(FIELD_LIMITS.price).length}
+            pattern={FIELD_PATTERNS.digits}
+            title={FIELD_TITLES.digits}
             inputMode="numeric"
-            step="1"
           />
         </div>
 

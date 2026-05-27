@@ -46,12 +46,18 @@ public class AdminUserSeeder
             return;
         }
 
-        var adminExists = await _dbContext.Users
-            .AsNoTracking()
-            .AnyAsync(u => u.Email == email, cancellationToken);
+        var existingAdmin = await _dbContext.Users
+            .FirstOrDefaultAsync(u => u.Email == email, cancellationToken);
 
-        if (adminExists)
+        if (existingAdmin is not null)
         {
+            existingAdmin.FullName = fullName;
+            existingAdmin.Role = UserRole.Admin;
+            existingAdmin.IsActive = true;
+            existingAdmin.PasswordHash = _passwordHasherService.HashPassword(existingAdmin, password);
+
+            await _dbContext.SaveChangesAsync(cancellationToken);
+            _logger.LogInformation("Default admin user refreshed. Email={Email}", email);
             return;
         }
 

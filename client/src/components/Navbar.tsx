@@ -16,8 +16,8 @@ const navLinks: NavLink[] = [
   { name: "Главная", to: "/#main" },
   { name: "Туры", to: "/tours" },
   { name: "Страны", to: "/#countries" },
-  { name: "О нас", to: "/#about" },
-  { name: "Контакты", to: "/#contacts" },
+  { name: "О нас", to: "/about" },
+  { name: "Контакты", to: "#contacts" },
 ];
 
 function getRoleMeta(role: UserRole): { label: string; badgeClassName: string } {

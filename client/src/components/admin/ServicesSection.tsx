@@ -11,6 +11,8 @@ import type { Tour } from "../../api/api";
 import { useFrontOfficeStore } from "../../hooks/useFrontOfficeStore";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizeIntegerInput,
   sanitizeMultilineTextInput,
   sanitizeTitleInput,
@@ -222,6 +224,8 @@ export default function ServicesSection({ tours }: ServicesSectionProps) {
                 placeholder="Трансфер из аэропорта"
                 required
                 maxLength={FIELD_LIMITS.shortText}
+                pattern={FIELD_PATTERNS.text}
+                title={FIELD_TITLES.text}
               />
             </div>
 
@@ -248,9 +252,7 @@ export default function ServicesSection({ tours }: ServicesSectionProps) {
             <div>
               <label className="text-sm text-slate-500">Базовая стоимость</label>
               <input
-                type="number"
-                min="0"
-                max={FIELD_LIMITS.price}
+                type="text"
                 value={serviceForm.price}
                 onChange={(event) =>
                   setServiceForm((current) => ({
@@ -264,8 +266,10 @@ export default function ServicesSection({ tours }: ServicesSectionProps) {
                 className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
                 placeholder="5000"
                 required
+                maxLength={String(FIELD_LIMITS.price).length}
+                pattern={FIELD_PATTERNS.digits}
+                title={FIELD_TITLES.digits}
                 inputMode="numeric"
-                step="1"
               />
             </div>
 
@@ -487,9 +491,7 @@ export default function ServicesSection({ tours }: ServicesSectionProps) {
                         <label className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
                           <span className="mb-2 block text-slate-500">Доплата</span>
                           <input
-                            type="number"
-                            min="0"
-                            max={FIELD_LIMITS.additionalPrice}
+                            type="text"
                             disabled={!draft.enabled || draft.isIncluded}
                             value={draft.additionalPrice}
                             onChange={(event) =>
@@ -511,8 +513,10 @@ export default function ServicesSection({ tours }: ServicesSectionProps) {
                               )
                             }
                             className="w-full bg-transparent focus:outline-none"
+                            maxLength={String(FIELD_LIMITS.additionalPrice).length}
+                            pattern={FIELD_PATTERNS.digits}
+                            title={FIELD_TITLES.digits}
                             inputMode="numeric"
-                            step="1"
                           />
                         </label>
                       </div>

@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchTours, type Tour } from "../api/api";
 import { pruneLocalTourData } from "../lib/frontOfficeStore";
+import { useFrontOfficeStore } from "./useFrontOfficeStore";
 
 type ToursState = {
   tours: Tour[];
@@ -9,11 +10,21 @@ type ToursState = {
 };
 
 export function useTours() {
+  const { bookings } = useFrontOfficeStore();
   const [state, setState] = useState<ToursState>({
     tours: [],
     loading: true,
     error: null,
   });
+
+  const bookingAvailabilityKey = useMemo(
+    () =>
+      bookings
+        .map((booking) => `${booking.id}:${booking.tourId}:${booking.status}:${booking.updatedAt}`)
+        .sort()
+        .join("|"),
+    [bookings]
+  );
 
   useEffect(() => {
     const controller = new AbortController();
@@ -41,7 +52,7 @@ export function useTours() {
     void loadTours();
 
     return () => controller.abort();
-  }, []);
+  }, [bookingAvailabilityKey]);
 
   return state;
 }

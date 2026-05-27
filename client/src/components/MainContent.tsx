@@ -10,6 +10,7 @@ import { useFavoriteTours } from "../hooks/useFavoriteTours";
 import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
 import { useTourBooking } from "../hooks/useTourBooking";
 import { useTours } from "../hooks/useTours";
+import { getEffectiveTourPrice } from "../lib/pricing";
 
 const whyUs = [
   {
@@ -36,10 +37,6 @@ const whyUs = [
 
 const HOME_TOUR_LIMIT = 3;
 
-function byLowestPrice(a: { basePrice: number }, b: { basePrice: number }) {
-  return a.basePrice - b.basePrice;
-}
-
 function byClosestDate(a: { startDate: string }, b: { startDate: string }) {
   return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
 }
@@ -49,20 +46,32 @@ export default function MainContent() {
   const { tours, loading, error } = useTours();
   const { isFavorite, toggleFavorite, isAvailable: favoritesAvailable } = useFavoriteTours();
   const {
+    profile,
     loading: profileLoading,
     error: profileError,
     isComplete: profileComplete,
   } = useClientProfileStatus();
+  const isRegularClient = Boolean(profile?.isRegular);
   const {
     bookingTourId,
     bookingFeedback,
+    unavailableBookingTourIds,
     handleBooking,
     clearBookingFeedback,
     getTourBookingLockLabel,
   } =
-    useTourBooking();
-  const featuredTours = [...tours].sort(byLowestPrice).slice(0, HOME_TOUR_LIMIT);
-  const upcomingTours = [...tours].sort(byClosestDate).slice(0, HOME_TOUR_LIMIT);
+    useTourBooking(isRegularClient);
+  const visibleTours =
+    session?.role === "Client"
+      ? tours.filter((tour) => !unavailableBookingTourIds.has(tour.id))
+      : tours;
+  const featuredTours = [...visibleTours]
+    .sort((left, right) =>
+      getEffectiveTourPrice(left.basePrice, isRegularClient) -
+      getEffectiveTourPrice(right.basePrice, isRegularClient)
+    )
+    .slice(0, HOME_TOUR_LIMIT);
+  const upcomingTours = [...visibleTours].sort(byClosestDate).slice(0, HOME_TOUR_LIMIT);
   const openTravelAssistant = () => {
     window.dispatchEvent(
       new CustomEvent("metravel-open-travel-chat", {
@@ -144,6 +153,7 @@ export default function MainContent() {
                   tour={tour}
                   index={index}
                   badge="Хит"
+                  isRegularClient={isRegularClient}
                   footer={
                     <TourCardActions
                       tour={tour}
@@ -201,6 +211,7 @@ export default function MainContent() {
                   tour={tour}
                   index={index + 1}
                   badge="Скоро"
+                  isRegularClient={isRegularClient}
                   footer={
                     <TourCardActions
                       tour={tour}
@@ -231,6 +242,9 @@ export default function MainContent() {
         <div className="mx-auto max-w-7xl px-5 sm:px-8 lg:px-12">
           <div className="mb-12 text-center md:mb-16">
             <h2 className="text-3xl font-bold text-gray-900 md:text-5xl">Почему выбирают MeTravel</h2>
+            <p className="mx-auto mt-4 max-w-3xl text-base leading-7 text-slate-600">
+              Коротко показываем наши сильные стороны здесь, а подробнее о подходе сервиса, ролях и работе системы можно прочитать на отдельной странице.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4 md:gap-10">
@@ -243,6 +257,16 @@ export default function MainContent() {
                 <p className="text-gray-600">{item.desc}</p>
               </div>
             ))}
+          </div>
+
+          <div className="mt-10 text-center">
+            <Link
+              to="/about"
+              className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-6 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-100"
+            >
+              Подробнее о компании
+              <FiArrowRight />
+            </Link>
           </div>
         </div>
       </section>

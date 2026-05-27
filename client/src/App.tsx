@@ -3,6 +3,7 @@ import Navbar from './components/Navbar';
 import ScrollToHash from './components/ScrollToHash';
 import TravelChatWidget from './components/TravelChatWidget';
 import { ProtectedRoute } from './components/auth/ProtectedRoute';
+import About from './pages/About';
 import Home from './pages/Home';
 import Favorites from './pages/Favorites';
 import Bookings from './pages/Bookings';
@@ -31,6 +32,7 @@ function App() {
         <main className="flex-grow">
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
             <Route path="/tours" element={<Tours />} />
             <Route
               path="/favorites"

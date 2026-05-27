@@ -82,4 +82,28 @@ public class UserRepository : IUserRepository
         await _dbContext.SaveChangesAsync(cancellationToken);
         return existing;
     }
+
+    public async Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default)
+    {
+        var existing = await _dbContext.Users
+            .Include(u => u.Client)
+            .FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
+
+        if (existing is null)
+        {
+            return false;
+        }
+
+        var linkedClient = existing.Client;
+
+        _dbContext.Users.Remove(existing);
+
+        if (linkedClient is not null)
+        {
+            _dbContext.Clients.Remove(linkedClient);
+        }
+
+        await _dbContext.SaveChangesAsync(cancellationToken);
+        return true;
+    }
 }

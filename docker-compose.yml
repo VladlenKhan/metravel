@@ -51,7 +51,7 @@ services:
       SeedAdminUser__Enabled: true
       SeedAdminUser__FullName: System Admin
       SeedAdminUser__Email: admin@metravel.local
-      SeedAdminUser__Password: admin123
+      SeedAdminUser__Password: "MeTravel_Admin_2026!Secure"
     depends_on:
       postgres:
         condition: service_healthy

@@ -67,4 +67,16 @@ public class UsersController : ControllerBase
 
         return Ok(user);
     }
+
+    [HttpDelete("{id:guid}")]
+    public async Task<IActionResult> Delete(Guid id, CancellationToken cancellationToken)
+    {
+        var deleted = await _userManagementService.DeleteAsync(id, cancellationToken);
+        if (!deleted)
+        {
+            return NotFound();
+        }
+
+        return NoContent();
+    }
 }

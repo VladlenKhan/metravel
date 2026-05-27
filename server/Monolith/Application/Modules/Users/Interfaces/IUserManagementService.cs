@@ -11,4 +11,6 @@ public interface IUserManagementService
     Task<UserDto?> UpdateRoleAsync(Guid id, UpdateUserRoleDto dto, CancellationToken cancellationToken = default);
 
     Task<UserDto?> UpdateStatusAsync(Guid id, UpdateUserStatusDto dto, CancellationToken cancellationToken = default);
+
+    Task<bool> DeleteAsync(Guid id, CancellationToken cancellationToken = default);
 }

@@ -2,6 +2,7 @@ const API_BASE_URL = (import.meta.env.VITE_API_URL || "").replace(/\/$/, "");
 const AUTH_STORAGE_KEY = "metravel_auth";
 const AUTH_EVENT_NAME = "metravel-auth-changed";
 const TOUR_MEDIA_STORAGE_KEY = "metravel_tour_media";
+const RESERVED_BOOKING_STATUSES = new Set<BookingStatus>(["Confirmed", "Completed"]);
 
 type RequestMethod = "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
 
@@ -206,6 +207,63 @@ function normalizeDateValue(value: unknown): string {
   }
 
   return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function getReservedSeatsByTourId(): Map<string, number> {
+  if (typeof window === "undefined") {
+    return new Map();
+  }
+
+  const raw = window.localStorage.getItem("metravel_front_office_store");
+  if (!raw) {
+    return new Map();
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const rawBookings = Array.isArray(parsed.bookings) ? parsed.bookings : [];
+    const reservedSeatsByTourId = new Map<string, number>();
+
+    rawBookings.forEach((booking) => {
+      if (!isRecord(booking)) {
+        return;
+      }
+
+      const rawTourId = booking.tourId ?? booking.TourId;
+      const rawStatus = booking.status ?? booking.Status;
+      const tourId = typeof rawTourId === "string" ? rawTourId : "";
+      const status = (typeof rawStatus === "string" ? rawStatus : "") as BookingStatus;
+
+      if (!tourId || !RESERVED_BOOKING_STATUSES.has(status)) {
+        return;
+      }
+
+      reservedSeatsByTourId.set(tourId, (reservedSeatsByTourId.get(tourId) ?? 0) + 1);
+    });
+
+    return reservedSeatsByTourId;
+  } catch {
+    return new Map();
+  }
+}
+
+function applyReservedSeatOverlay(tours: Tour[]): Tour[] {
+  const reservedSeatsByTourId = getReservedSeatsByTourId();
+  if (reservedSeatsByTourId.size === 0) {
+    return tours;
+  }
+
+  return tours.map((tour) => {
+    const reservedSeats = reservedSeatsByTourId.get(tour.id) ?? 0;
+    if (reservedSeats <= 0) {
+      return tour;
+    }
+
+    return {
+      ...tour,
+      availableSeats: Math.max(0, Math.min(tour.totalSeats, tour.availableSeats - reservedSeats)),
+    };
+  });
 }
 
 function readTourMediaMap(): Record<string, string> {
@@ -545,7 +603,9 @@ export function fetchTours(signal?: AbortSignal): Promise<Tour[]> {
     }
 
     const tourMediaMap = readTourMediaMap();
-    return response.map((tour, index) => normalizeTour(tour, index, tourMediaMap));
+    return applyReservedSeatOverlay(
+      response.map((tour, index) => normalizeTour(tour, index, tourMediaMap))
+    );
   });
 }
 

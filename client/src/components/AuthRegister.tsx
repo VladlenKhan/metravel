@@ -4,7 +4,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { register, saveAuthSession } from "../api/api";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizeEmailInput,
+  sanitizePasswordInput,
   sanitizePersonNameInput,
 } from "../lib/formSanitizers";
 
@@ -72,7 +75,10 @@ export default function AuthRegister() {
               placeholder="Иван"
               className="mt-1 w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
+              minLength={2}
               maxLength={FIELD_LIMITS.firstName}
+              pattern={FIELD_PATTERNS.personName}
+              title={FIELD_TITLES.personName}
               autoComplete="given-name"
             />
           </div>
@@ -88,7 +94,10 @@ export default function AuthRegister() {
               placeholder="Иванов"
               className="mt-1 w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
+              minLength={2}
               maxLength={FIELD_LIMITS.lastName}
+              pattern={FIELD_PATTERNS.personName}
+              title={FIELD_TITLES.personName}
               autoComplete="family-name"
             />
           </div>
@@ -103,8 +112,11 @@ export default function AuthRegister() {
               className="mt-1 w-full rounded-xl border px-4 py-2 focus:outline-none focus:ring-2 focus:ring-amber-500"
               required
               maxLength={FIELD_LIMITS.email}
+              pattern={FIELD_PATTERNS.email}
+              title={FIELD_TITLES.email}
               inputMode="email"
               autoComplete="email"
+              spellCheck={false}
             />
           </div>
 
@@ -114,13 +126,16 @@ export default function AuthRegister() {
               <input
                 type={showPassword ? "text" : "password"}
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(event) => setPassword(sanitizePasswordInput(event.target.value))}
                 placeholder="Придумайте пароль"
                 className="w-full rounded-xl border px-4 py-2 pr-12 focus:outline-none focus:ring-2 focus:ring-amber-500"
                 required
                 minLength={6}
                 maxLength={FIELD_LIMITS.password}
+                pattern={FIELD_PATTERNS.password}
+                title={FIELD_TITLES.password}
                 autoComplete="new-password"
+                spellCheck={false}
               />
               <button
                 type="button"

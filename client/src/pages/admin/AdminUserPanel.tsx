@@ -21,9 +21,11 @@ import {
   createTour,
   deleteUser,
   deleteTour,
+  fetchClients,
   fetchTours,
   fetchUsers,
   type AdminUser,
+  type ClientProfile,
   type Tour,
   type TourUpsertPayload,
   type UserRole,
@@ -37,10 +39,13 @@ import { useAuthSession } from "../../hooks/useAuthSession";
 import { useFrontOfficeStore } from "../../hooks/useFrontOfficeStore";
 import {
   FIELD_LIMITS,
+  FIELD_PATTERNS,
+  FIELD_TITLES,
   sanitizeEmailInput,
   sanitizeIntegerInput,
   sanitizeMultilineTextInput,
   sanitizePassportInput,
+  sanitizePasswordInput,
   sanitizePersonNameInput,
   sanitizePhoneInput,
   sanitizeShortTextInput,
@@ -316,6 +321,7 @@ export const AdminUsersPanel = () => {
   );
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [tours, setTours] = useState<Tour[]>([]);
+  const [clients, setClients] = useState<ClientProfile[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
   const [loadingTours, setLoadingTours] = useState(true);
   const [usersError, setUsersError] = useState("");
@@ -380,6 +386,20 @@ export const AdminUsersPanel = () => {
     }
   };
 
+  const loadClients = async () => {
+    if (!canManageClients) {
+      setClients([]);
+      return;
+    }
+
+    try {
+      const data = await fetchClients();
+      setClients(data);
+    } catch {
+      setClients([]);
+    }
+  };
+
   useEffect(() => {
     if (!canManageUsers && activeSection === "users") {
       setActiveSection("bookings");
@@ -431,7 +451,13 @@ export const AdminUsersPanel = () => {
       setToursError("");
       setLoadingTours(false);
     }
-  }, [canManageTours, canManageUsers]);
+
+    if (canManageClients) {
+      void loadClients();
+    } else {
+      setClients([]);
+    }
+  }, [canManageClients, canManageTours, canManageUsers]);
 
   const teamUsers = useMemo(
     () => users.filter((user) => user.role === "Admin" || user.role === "Operator"),
@@ -440,6 +466,36 @@ export const AdminUsersPanel = () => {
   const clientUsers = useMemo(
     () => users.filter((user) => user.role === "Client"),
     [users]
+  );
+  const currentSessionEmail = session?.email.trim().toLowerCase() ?? "";
+  const linkedUserRolesByClientId = useMemo(() => {
+    const roleMap = new Map<string, UserRole>();
+
+    users.forEach((user) => {
+      if (!user.clientId) {
+        return;
+      }
+
+      roleMap.set(user.clientId.trim().toLowerCase(), user.role);
+    });
+
+    return roleMap;
+  }, [users]);
+  const visibleClients = useMemo(
+    () =>
+      clients.filter((client) => {
+        const linkedRole = linkedUserRolesByClientId.get(client.id.trim().toLowerCase()) ?? null;
+
+        if (
+          session?.role !== "Client" &&
+          client.email.trim().toLowerCase() === currentSessionEmail
+        ) {
+          return false;
+        }
+
+        return linkedRole === null || linkedRole === "Client";
+      }),
+    [clients, currentSessionEmail, linkedUserRolesByClientId, session?.role]
   );
   const selectedUserDirectory = userDirectoryView === "team" ? teamUsers : clientUsers;
   const shouldScrollSelectedUserDirectory = selectedUserDirectory.length > 3;
@@ -468,8 +524,8 @@ export const AdminUsersPanel = () => {
             },
             {
               title: "Клиенты",
-              value: clientUsers.length,
-              description: "Путешественники с аккаунтом",
+              value: visibleClients.length,
+              description: "Клиентские карточки",
             },
             {
               title: "Заявки",
@@ -485,7 +541,7 @@ export const AdminUsersPanel = () => {
         : [
             {
               title: "Клиенты",
-              value: clientUsers.length,
+              value: visibleClients.length,
               description: "Карточки для сопровождения",
             },
             {
@@ -504,7 +560,15 @@ export const AdminUsersPanel = () => {
               description: "Доступны в каталоге",
             },
           ],
-    [bookings.length, canManageUsers, clientUsers.length, payments.length, services.length, teamUsers.length, tours.length]
+    [
+      bookings.length,
+      canManageUsers,
+      payments.length,
+      services.length,
+      teamUsers.length,
+      tours.length,
+      visibleClients.length,
+    ]
   );
 
   const renderUserCard = (user: AdminUser) => {
@@ -1033,6 +1097,8 @@ export const AdminUsersPanel = () => {
                       required
                       minLength={2}
                       maxLength={FIELD_LIMITS.fullName}
+                      pattern={FIELD_PATTERNS.personName}
+                      title={FIELD_TITLES.personName}
                       autoComplete="name"
                     />
                   </div>
@@ -1053,8 +1119,11 @@ export const AdminUsersPanel = () => {
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
                         required
                         maxLength={FIELD_LIMITS.email}
+                        pattern={FIELD_PATTERNS.email}
+                        title={FIELD_TITLES.email}
                         inputMode="email"
                         autoComplete="email"
+                        spellCheck={false}
                       />
                     </div>
 
@@ -1064,14 +1133,20 @@ export const AdminUsersPanel = () => {
                         type="password"
                         value={userForm.password}
                         onChange={(event) =>
-                          setUserForm((current) => ({ ...current, password: event.target.value }))
+                          setUserForm((current) => ({
+                            ...current,
+                            password: sanitizePasswordInput(event.target.value),
+                          }))
                         }
                         placeholder="Минимум 6 символов"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
                         required
                         minLength={6}
                         maxLength={FIELD_LIMITS.password}
+                        pattern={FIELD_PATTERNS.password}
+                        title={FIELD_TITLES.password}
                         autoComplete="new-password"
+                        spellCheck={false}
                       />
                     </div>
                   </div>
@@ -1088,11 +1163,13 @@ export const AdminUsersPanel = () => {
                             phoneNumber: sanitizePhoneInput(event.target.value),
                           }))
                         }
-                        placeholder="+7 999 123-45-67"
+                        placeholder="+7 (999) 123-45-67"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
                         required
-                        minLength={6}
+                        minLength={FIELD_LIMITS.phone}
                         maxLength={FIELD_LIMITS.phone}
+                        pattern={FIELD_PATTERNS.phone}
+                        title={FIELD_TITLES.phone}
                         inputMode="tel"
                         autoComplete="tel"
                       />
@@ -1112,8 +1189,10 @@ export const AdminUsersPanel = () => {
                         placeholder="1234 567890"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-sky-400"
                         required
-                        minLength={5}
+                        minLength={FIELD_LIMITS.passport}
                         maxLength={FIELD_LIMITS.passport}
+                        pattern={FIELD_PATTERNS.passport}
+                        title={FIELD_TITLES.passport}
                         autoComplete="off"
                       />
                     </div>
@@ -1288,7 +1367,10 @@ export const AdminUsersPanel = () => {
               </div>
             </div>
           ) : activeSection === "clients" ? (
-            <ClientsSection />
+              <ClientsSection
+                onClientsChanged={loadClients}
+                linkedUserRolesByClientId={linkedUserRolesByClientId}
+              />
           ) : activeSection === "bookings" ? (
             <BookingsSection />
           ) : activeSection === "payments" ? (
@@ -1326,10 +1408,12 @@ export const AdminUsersPanel = () => {
                           title: sanitizeTitleInput(event.target.value, FIELD_LIMITS.title),
                         }))
                       }
-                      placeholder="Istanbul City Break"
+                      placeholder="Летний уикенд в Стамбуле"
                       className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                       required
                       maxLength={FIELD_LIMITS.title}
+                      pattern={FIELD_PATTERNS.text}
+                      title={FIELD_TITLES.text}
                     />
                   </div>
 
@@ -1352,6 +1436,8 @@ export const AdminUsersPanel = () => {
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         required
                         maxLength={FIELD_LIMITS.location}
+                        pattern={FIELD_PATTERNS.text}
+                        title={FIELD_TITLES.text}
                       />
                     </div>
 
@@ -1373,6 +1459,8 @@ export const AdminUsersPanel = () => {
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         required
                         maxLength={FIELD_LIMITS.location}
+                        pattern={FIELD_PATTERNS.text}
+                        title={FIELD_TITLES.text}
                       />
                     </div>
                   </div>
@@ -1443,7 +1531,10 @@ export const AdminUsersPanel = () => {
                         placeholder="https://example.com/tour-cover.jpg"
                         className="mt-3 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         maxLength={FIELD_LIMITS.imageUrl}
+                        pattern={FIELD_PATTERNS.url}
+                        title={FIELD_TITLES.url}
                         inputMode="url"
+                        spellCheck={false}
                       />
                       <p className="mt-3 text-xs leading-5 text-slate-500">
                         Если загрузите файл, он сохранится только во фронте и будет виден на этом устройстве.
@@ -1477,9 +1568,7 @@ export const AdminUsersPanel = () => {
                     <div>
                       <label className="text-sm text-slate-500">Стоимость</label>
                       <input
-                        type="number"
-                        min="1"
-                        max={FIELD_LIMITS.price}
+                        type="text"
                         value={tourForm.basePrice}
                         onChange={(event) =>
                           setTourForm((current) => ({
@@ -1493,17 +1582,17 @@ export const AdminUsersPanel = () => {
                         placeholder="145000"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         required
+                        maxLength={String(FIELD_LIMITS.price).length}
+                        pattern={FIELD_PATTERNS.digits}
+                        title={FIELD_TITLES.digits}
                         inputMode="numeric"
-                        step="1"
                       />
                     </div>
 
                     <div>
                       <label className="text-sm text-slate-500">Мест всего</label>
                       <input
-                        type="number"
-                        min="1"
-                        max={FIELD_LIMITS.seats}
+                        type="text"
                         value={tourForm.totalSeats}
                         onChange={(event) =>
                           setTourForm((current) => ({
@@ -1518,17 +1607,17 @@ export const AdminUsersPanel = () => {
                         placeholder="20"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         required
+                        maxLength={3}
+                        pattern={FIELD_PATTERNS.digits}
+                        title={FIELD_TITLES.digits}
                         inputMode="numeric"
-                        step="1"
                       />
                     </div>
 
                     <div>
                       <label className="text-sm text-slate-500">Свободно сейчас</label>
                       <input
-                        type="number"
-                        min="0"
-                        max={FIELD_LIMITS.seats}
+                        type="text"
                         value={tourForm.availableSeats}
                         onChange={(event) =>
                           setTourForm((current) => ({
@@ -1543,8 +1632,10 @@ export const AdminUsersPanel = () => {
                         placeholder="20"
                         className="mt-1 w-full rounded-2xl border border-slate-200 px-4 py-3 text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-400"
                         required
+                        maxLength={3}
+                        pattern={FIELD_PATTERNS.digits}
+                        title={FIELD_TITLES.digits}
                         inputMode="numeric"
-                        step="1"
                       />
                     </div>
                   </div>
