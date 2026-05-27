@@ -31,7 +31,6 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
   return (
     <div className="mb-10 md:mb-12">
       <div className="flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-md md:flex-row md:items-end md:gap-8">
-        {/* Поиск по названию */}
         <div className="flex-1">
           <label className="mb-2 block text-sm font-medium text-gray-700">
             Направление или страна
@@ -58,7 +57,6 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
           </div>
         </div>
 
-        {/* Цена от */}
         <div className="w-full md:w-44">
           <label className="mb-2 block text-sm font-medium text-gray-700">
             Цена от (₽)
@@ -90,7 +88,6 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
           />
         </div>
 
-        {/* Цена до */}
         <div className="w-full md:w-44">
           <label className="mb-2 block text-sm font-medium text-gray-700">
             Цена до (₽)
@@ -122,7 +119,6 @@ export default function TourFilters({ filters, onFilterChange }: TourFiltersProp
           />
         </div>
 
-        {/* Кнопки */}
         <div className="flex items-end gap-3 self-end">
           <button
             type="button"

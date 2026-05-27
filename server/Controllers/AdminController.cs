@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Metravel.DTOs.Admin;
-// using Metravel.Models; // Раскомментируйте и укажите путь к вашей модели ApplicationUser
 
 namespace Metravel.Controllers;
 
@@ -12,7 +11,6 @@ namespace Metravel.Controllers;
 [Authorize(Roles = "Admin")]
 public class AdminController : ControllerBase
 {
-    // Замените IdentityUser на вашу модель пользователя (например, ApplicationUser), если вы её расширяли
     private readonly UserManager<IdentityUser> _userManager;
     private readonly RoleManager<IdentityRole> _roleManager;
 
@@ -35,7 +33,7 @@ public class AdminController : ControllerBase
             {
                 Id = user.Id,
                 Email = user.Email ?? string.Empty,
-                FullName = user.UserName ?? "Без имени", // Замените на FullName, если оно есть в вашей модели
+                FullName = user.UserName ?? "Без имени",
                 Roles = roles
             });
         }

@@ -1,11 +1,9 @@
-// src/components/ScrollToTop.tsx
 import { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';  
 
 export default function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false);
 
-  // Показываем кнопку после прокрутки на 300px вниз
   useEffect(() => {
     const toggleVisibility = () => {
       if (window.scrollY > 300) {

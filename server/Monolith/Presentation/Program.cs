@@ -104,8 +104,6 @@ builder.Services.AddSingleton<IRecommendationModelStore>(serviceProvider =>
 builder.Services.AddScoped<IRecommendationService, RecommendationService>();
 
 builder.Services.AddControllers();
-
-// Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -126,8 +124,6 @@ using (var scope = app.Services.CreateScope())
     var adminUserSeeder = scope.ServiceProvider.GetRequiredService<AdminUserSeeder>();
     await adminUserSeeder.SeedAsync();
 }
-
-// Глобальная обработка необработанных исключений
 app.UseMiddleware<GlobalExceptionHandlingMiddleware>();
 
 if (app.Environment.IsDevelopment())

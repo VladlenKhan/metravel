@@ -1,10 +1,8 @@
-// src/components/Hero.tsx
 import bgImage from '../assets/images/backgournd-video-1.mp4';
 
 export default function Hero() {
   return (
     <section id="main" className="relative min-h-screen flex items-center pt-16 md:pt-0">
-      {/* Background */}
       <div className="absolute inset-0">
         <div className="absolute inset-0 bg-gradient-to-r from-yellow-900/40 via-green-900/40 to-blue-900/40 mix-blend-multiply " />
         <video
@@ -17,7 +15,6 @@ export default function Hero() {
         />
       </div>
 
-      {/* Content */}
       <div className="relative mx-auto px-5 sm:px-8 lg:px-12 max-w-7xl w-full mt-17">
         <div className="max-w-4xl">
           <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight mb-5 md:mb-8 mt-5 title">
@@ -39,7 +36,6 @@ export default function Hero() {
             </a>
           </div>
 
-          {/* Trust badges */}
           <div className="flex flex-wrap gap-8 md:gap-12 mt-12 mb-6  md:mt-16 text-white/90">
             <div>
               <div className="text-3xl md:text-4xl font-bold">3 года</div>

@@ -308,7 +308,6 @@ function writeTourMediaMap(mediaMap: Record<string, string>): void {
     try {
       window.localStorage.removeItem(TOUR_MEDIA_STORAGE_KEY);
     } catch {
-      // Ignore storage cleanup issues to avoid breaking tour operations.
     }
     return;
   }
@@ -319,7 +318,6 @@ function writeTourMediaMap(mediaMap: Record<string, string>): void {
       JSON.stringify(Object.fromEntries(normalizedEntries))
     );
   } catch {
-    // Ignore quota/storage issues so tour CRUD still succeeds without the image.
   }
 }
 
@@ -496,7 +494,6 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
       const data = (await response.json()) as { message?: string; title?: string };
       message = data.message || data.title || message;
     } catch {
-      // Keep generic fallback for non-JSON responses.
     }
 
     throw new Error(message);

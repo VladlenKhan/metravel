@@ -1,4 +1,3 @@
-// src/components/Testimonials.tsx
 import { useState, useEffect } from "react";
 import { FiChevronLeft, FiChevronRight, FiStar } from "react-icons/fi";
 
@@ -65,7 +64,6 @@ export default function Testimonials() {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // autoplay
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prev) => (prev + 1) % total);
@@ -84,8 +82,6 @@ export default function Testimonials() {
   return (
     <section className="py-16 md:py-24 bg-white">
       <div className="max-w-7xl mx-auto px-5">
-        
-        {/* Header */}
         <div className="text-center mb-12">
           <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
             Что говорят наши путешественники
@@ -95,13 +91,11 @@ export default function Testimonials() {
           </p>
         </div>
 
-        {/* Carousel */}
         <div className="relative max-w-[900px] mx-auto overflow-hidden">
           <div
             className="relative flex items-center justify-center"
             style={{ height: `${trackHeight}px` }}
           >
-            
             {testimonials.map((t, index) => {
               let position = index - currentIndex;
 
@@ -143,8 +137,6 @@ export default function Testimonials() {
                   }}
                 >
                   <div className="bg-white rounded-3xl shadow-xl p-5 sm:p-6 border border-gray-100">
-                    
-                    {/* User */}
                     <div className="flex items-center gap-3 sm:gap-4 mb-4">
                       <img
                         src={t.avatar}
@@ -161,7 +153,6 @@ export default function Testimonials() {
                       </div>
                     </div>
 
-                    {/* Rating */}
                     <div className="flex gap-1 mb-3">
                       {Array.from({ length: t.rating }).map((_, i) => (
                         <FiStar
@@ -172,12 +163,10 @@ export default function Testimonials() {
                       ))}
                     </div>
 
-                    {/* Text */}
                     <p className="text-gray-700 text-lg sm:text-xl leading-8 mb-4 min-h-[96px] sm:min-h-[120px]">
                       «{t.text}»
                     </p>
 
-                    {/* Tour */}
                     <div className="text-sm sm:text-base text-gray-500 border-t pt-3">
                       {t.tour}
                     </div>
@@ -188,7 +177,6 @@ export default function Testimonials() {
           </div>
         </div>
 
-        {/* Controls */}
         <div className="flex justify-center items-center gap-4 sm:gap-8 mt-6 sm:mt-10">
           <button
             onClick={prev}
@@ -218,7 +206,6 @@ export default function Testimonials() {
             <FiChevronRight size={22} />
           </button>
         </div>
-
       </div>
     </section>
   );
