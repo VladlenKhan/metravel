@@ -1,5 +1,6 @@
 import { CalendarClock, CreditCard, MapPin, ShieldCheck, Ticket, XCircle } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Footer from "../components/Footer";
 import ScrollToTop from "../components/ScrollToTop";
 import { useAuthSession } from "../hooks/useAuthSession";
@@ -7,7 +8,6 @@ import { useClientProfileStatus } from "../hooks/useClientProfileStatus";
 import { useFrontOfficeStore } from "../hooks/useFrontOfficeStore";
 import {
   updateLocalBookingStatus,
-  updateLocalPaymentStatus,
   updateLocalPaymentStatusByBookingId,
 } from "../lib/frontOfficeStore";
 
@@ -88,6 +88,7 @@ function getPaymentStatusMeta(status: string | null): { label: string; className
 }
 
 export default function Bookings() {
+  const navigate = useNavigate();
   const session = useAuthSession();
   const { currentUser, loading, error, sessionRole } = useClientProfileStatus();
   const { bookings, payments } = useFrontOfficeStore();
@@ -97,7 +98,7 @@ export default function Bookings() {
     message: string;
   } | null>(null);
   const [pendingBookingId, setPendingBookingId] = useState<string | null>(null);
-  const [pendingAction, setPendingAction] = useState<"cancel" | "pay" | null>(null);
+  const [pendingAction, setPendingAction] = useState<"cancel" | null>(null);
 
   const myBookings = useMemo(() => {
     const currentClientId = currentUser?.clientId ?? currentUser?.id ?? "";
@@ -217,26 +218,7 @@ export default function Bookings() {
       return;
     }
 
-    setFeedback(null);
-    setPendingBookingId(booking.id);
-    setPendingAction("pay");
-
-    try {
-      updateLocalPaymentStatus(existingPayment.id, "Paid");
-
-      setFeedback({
-        type: "success",
-        message: "Вы оплатили тур. Статус оплаты уже отображается у менеджера и в разделе оплат.",
-      });
-    } catch {
-      setFeedback({
-        type: "error",
-        message: "Не удалось обновить статус оплаты. Попробуйте еще раз.",
-      });
-    } finally {
-      setPendingBookingId(null);
-      setPendingAction(null);
-    }
+    navigate(`/bookings/${booking.id}/pay`);
   };
 
   if (sessionRole && sessionRole !== "Client") {
@@ -268,7 +250,6 @@ export default function Bookings() {
     const canCancelBooking = booking.status === "Created" || booking.status === "Confirmed";
     const isBookingActionPending = pendingBookingId === booking.id;
     const isCancellingBooking = isBookingActionPending && pendingAction === "cancel";
-    const isPayingBooking = isBookingActionPending && pendingAction === "pay";
     const canPayBooking =
       shouldShowPayment && booking.status !== "Completed" && payment?.status === "Pending";
     const shouldShowAwaitInvoiceState =
@@ -342,7 +323,7 @@ export default function Bookings() {
                   className="inline-flex items-center gap-2 rounded-full bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <CreditCard size={16} />
-                  {isPayingBooking ? "Проводим оплату..." : "Оплатить"}
+                  Оплатить
                 </button>
               ) : null}
 

@@ -7,6 +7,7 @@ import About from './pages/About';
 import Home from './pages/Home';
 import Favorites from './pages/Favorites';
 import Bookings from './pages/Bookings';
+import CardPayment from './pages/CardPayment';
 import NotFound from './pages/NotFound';
 import Profile from './pages/Profile';
 import SignIn from './pages/SignIn';
@@ -57,6 +58,14 @@ function App() {
               element={
                 <ProtectedRoute requiredRole="Client">
                   <Bookings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/bookings/:bookingId/pay"
+              element={
+                <ProtectedRoute requiredRole="Client">
+                  <CardPayment />
                 </ProtectedRoute>
               }
             />
